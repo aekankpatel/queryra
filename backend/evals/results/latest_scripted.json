@@ -1,6 +1,6 @@
 {
   "meta": {
-    "timestamp": "2026-11-08T07:08:47+00:00",
+    "timestamp": "2026-11-08T07:16:05+00:00",
     "mode": "scripted",
     "provider": "scripted",
     "model": "scripted",
@@ -26,8 +26,8 @@
     "sql_validity": 0.584,
     "tool_selection_f1": 1.0,
     "hallucination_rate": 0.0,
-    "avg_latency_s": 0.805,
-    "avg_total_tokens": 25763.0,
+    "avg_latency_s": 0.77,
+    "avg_total_tokens": 25759.0,
     "avg_tool_calls": 8.5,
     "error_recovery_rate": 1.0,
     "scorer_calibration": 1.0,
@@ -85,22 +85,22 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 1.05,
-      "total_tokens": 20278,
+      "latency_s": 1.02,
+      "total_tokens": 20273,
       "tokens_by_stage": {
         "plan": {
           "calls": 1,
-          "input_tokens": 933,
+          "input_tokens": 932,
           "output_tokens": 197
         },
         "act": {
           "calls": 8,
-          "input_tokens": 11031,
+          "input_tokens": 11028,
           "output_tokens": 172
         },
         "reflect": {
           "calls": 2,
-          "input_tokens": 2908,
+          "input_tokens": 2907,
           "output_tokens": 144
         },
         "synthesize": {
@@ -190,7 +190,7 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.46,
+      "latency_s": 0.42,
       "total_tokens": 29440,
       "tokens_by_stage": {
         "plan": {
@@ -294,7 +294,7 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.56,
+      "latency_s": 0.52,
       "total_tokens": 29722,
       "tokens_by_stage": {
         "plan": {
@@ -396,17 +396,17 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.56,
-      "total_tokens": 31248,
+      "latency_s": 0.52,
+      "total_tokens": 31245,
       "tokens_by_stage": {
         "plan": {
           "calls": 1,
-          "input_tokens": 933,
+          "input_tokens": 932,
           "output_tokens": 197
         },
         "act": {
           "calls": 12,
-          "input_tokens": 19388,
+          "input_tokens": 19386,
           "output_tokens": 264
         },
         "reflect": {

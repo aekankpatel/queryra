@@ -1,0 +1,473 @@
+{
+  "title": "Retrospective rescoring after the task-alignment granularity fix",
+  "kind": "retrospective rescoring of recorded runs; no new model executions",
+  "llm_calls": 0,
+  "neurons": 0,
+  "official_benchmark": {
+    "file": "benchmark_cloudflare_gpt-oss-120b_2026-11-07_resumed.json",
+    "result": "4/6",
+    "unchanged": true
+  },
+  "postfix_validation": {
+    "file": "postfix_validation_2026-11-08.json",
+    "unchanged": true
+  },
+  "how": "python -m evals.rescore over the recorded runs (stored task spec, evidence, SQL results and answers); official scores quoted verbatim from the official file",
+  "criteria_changed": [
+    {
+      "id": "derived_time_grouping",
+      "where": "databeacon/agent/alignment.py check_alignment (grouping)",
+      "before": "answer.dimension must literally be one of spec.group_by",
+      "after": "also accepted when the dimension is a time bucket (DATE_TRUNC/strftime/CAST AS DATE alias, or time_column+freq of a time-series tool) of a requested date column, at the granularity the question asks for; buckets of another date column, or of another granularity, still fail; cited evidence that buckets the requested date column at a different granularity than requested now fails even if the dimension is the raw column"
+    },
+    {
+      "id": "granularity_date_comparison",
+      "where": "alignment._entity_match / entity_stated; evals/metrics.py primary_conclusion",
+      "before": "dates matched only as full YYYY-MM-DD (compared at month), so 2025-10 never matched 2025-10-01",
+      "after": "dates compared at the requested granularity (day/week/month/quarter/year; month when unspecified). A month without a day never satisfies a daily request"
+    },
+    {
+      "id": "written_dates",
+      "where": "alignment.date_refs",
+      "before": "only ISO YYYY-MM-DD recognised when checking that the summary states a date",
+      "after": "also YYYY-MM, YYYY/MM(/DD), 'October 2025', 'Oct. 2025', 'October 1, 2025', '1 October 2025'; impossible dates (2025-13, 31 June) and lower-case 'may' ignored"
+    }
+  ],
+  "justification": "revenue_trend run b956ca14649a answered correctly (change point 2025-10-01, -60,712; 9/9 numeric claims verified) but failed on literal comparisons; see postfix_validation_2026-11-08.md. Each relaxation is paired with negative tests (tests/test_alignment_granularity.py) and counterfactual wrong answers below, all rejected.",
+  "cases": [
+    {
+      "case": "revenue_decline_attribution",
+      "run_id": "0848f476efd2",
+      "official": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "pass",
+          "metric": "pass",
+          "grouping": "pass",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      },
+      "scorer_only": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "pass",
+          "metric": "pass",
+          "grouping": "pass",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      },
+      "rescored": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "pass",
+          "metric": "pass",
+          "grouping": "pass",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      }
+    },
+    {
+      "case": "discount_shift",
+      "run_id": "daed68f13aa5",
+      "official": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "pass",
+          "metric": "pass",
+          "grouping": "pass",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      },
+      "scorer_only": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "pass",
+          "metric": "pass",
+          "grouping": "pass",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      },
+      "rescored": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "pass",
+          "metric": "pass",
+          "grouping": "pass",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      }
+    },
+    {
+      "case": "shipping_by_region",
+      "run_id": "24962e3ca49f",
+      "official": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "n/a",
+          "metric": "pass",
+          "grouping": "pass",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      },
+      "scorer_only": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "n/a",
+          "metric": "pass",
+          "grouping": "pass",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      },
+      "rescored": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "n/a",
+          "metric": "pass",
+          "grouping": "pass",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      }
+    },
+    {
+      "case": "return_rate",
+      "run_id": "0825f25a9997",
+      "official": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "n/a",
+          "metric": "pass",
+          "grouping": "pass",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      },
+      "scorer_only": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "n/a",
+          "metric": "pass",
+          "grouping": "pass",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      },
+      "rescored": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "n/a",
+          "metric": "pass",
+          "grouping": "pass",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      }
+    },
+    {
+      "case": "revenue_trend",
+      "run_id": "b956ca14649a",
+      "official": {
+        "task_success": false,
+        "checks": {
+          "completed": "pass",
+          "alignment": "fail",
+          "primary_conclusion": "fail",
+          "period": "n/a",
+          "metric": "pass",
+          "grouping": "n/a",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": [
+          "answer is grouped by 'month' but the question asks for order_date",
+          "the summary does not state the primary conclusion '2025-10'"
+        ]
+      },
+      "scorer_only": {
+        "task_success": false,
+        "checks": {
+          "completed": "pass",
+          "alignment": "fail",
+          "primary_conclusion": "pass",
+          "period": "n/a",
+          "metric": "pass",
+          "grouping": "n/a",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": [
+          "answer is grouped by 'month' but the question asks for order_date",
+          "the summary does not state the primary conclusion '2025-10'"
+        ]
+      },
+      "rescored": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "n/a",
+          "metric": "pass",
+          "grouping": "n/a",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      }
+    },
+    {
+      "case": "data_quality",
+      "run_id": "2d4a5933169e",
+      "official": {
+        "task_success": false,
+        "checks": {
+          "completed": "fail",
+          "alignment": "fail",
+          "primary_conclusion": "fail",
+          "period": "n/a",
+          "metric": "n/a",
+          "grouping": "n/a",
+          "numerical_evidence": "fail",
+          "hallucination": "fail"
+        },
+        "alignment_issues": []
+      },
+      "scorer_only": {
+        "task_success": false,
+        "checks": {
+          "completed": "fail",
+          "alignment": "fail",
+          "primary_conclusion": "fail",
+          "period": "n/a",
+          "metric": "n/a",
+          "grouping": "n/a",
+          "numerical_evidence": "fail",
+          "hallucination": "fail"
+        },
+        "alignment_issues": []
+      },
+      "rescored": {
+        "task_success": false,
+        "checks": {
+          "completed": "fail",
+          "alignment": "fail",
+          "primary_conclusion": "fail",
+          "period": "n/a",
+          "metric": "n/a",
+          "grouping": "n/a",
+          "numerical_evidence": "fail",
+          "hallucination": "fail"
+        },
+        "alignment_issues": []
+      }
+    }
+  ],
+  "summary": {
+    "scorer_only": {
+      "cases": 6,
+      "task_success_rate": 0.667,
+      "primary_conclusion_rate": 0.833,
+      "period_correct_rate": 1.0,
+      "metric_correct_rate": 1.0,
+      "grouping_correct_rate": 1.0,
+      "numerical_evidence_rate": 0.833,
+      "alignment_rate": 0.667,
+      "sql_validity": 1.0,
+      "tool_selection_f1": 0.8,
+      "hallucination_rate": 0.0,
+      "avg_latency_s": 61.835,
+      "avg_total_tokens": 19164.333,
+      "avg_tool_calls": 4.0,
+      "error_recovery_rate": 0.0,
+      "scorer_calibration": 0.667
+    },
+    "rescored": {
+      "cases": 6,
+      "task_success_rate": 0.833,
+      "primary_conclusion_rate": 0.833,
+      "period_correct_rate": 1.0,
+      "metric_correct_rate": 1.0,
+      "grouping_correct_rate": 1.0,
+      "numerical_evidence_rate": 0.833,
+      "alignment_rate": 0.833,
+      "sql_validity": 1.0,
+      "tool_selection_f1": 0.8,
+      "hallucination_rate": 0.0,
+      "avg_latency_s": 61.835,
+      "avg_total_tokens": 19164.333,
+      "avg_tool_calls": 4.0,
+      "error_recovery_rate": 0.0,
+      "scorer_calibration": 0.833
+    }
+  },
+  "counterfactuals": {
+    "wrong_month_march_2025": {
+      "task_success": false,
+      "checks": {
+        "completed": "pass",
+        "alignment": "pass",
+        "primary_conclusion": "fail",
+        "period": "n/a",
+        "metric": "pass",
+        "grouping": "n/a",
+        "numerical_evidence": "pass",
+        "hallucination": "pass"
+      },
+      "alignment_issues": []
+    },
+    "wrong_year_october_2024": {
+      "task_success": false,
+      "checks": {
+        "completed": "pass",
+        "alignment": "pass",
+        "primary_conclusion": "fail",
+        "period": "n/a",
+        "metric": "pass",
+        "grouping": "n/a",
+        "numerical_evidence": "pass",
+        "hallucination": "pass"
+      },
+      "alignment_issues": []
+    },
+    "unrelated_date_column_ship_date": {
+      "task_success": false,
+      "checks": {
+        "completed": "pass",
+        "alignment": "fail",
+        "primary_conclusion": "pass",
+        "period": "n/a",
+        "metric": "pass",
+        "grouping": "n/a",
+        "numerical_evidence": "pass",
+        "hallucination": "pass"
+      },
+      "alignment_issues": [
+        "answer is grouped by 'ship_month' but the question asks for order_date"
+      ]
+    },
+    "conclusion_not_in_summary": {
+      "task_success": false,
+      "checks": {
+        "completed": "pass",
+        "alignment": "fail",
+        "primary_conclusion": "fail",
+        "period": "n/a",
+        "metric": "pass",
+        "grouping": "n/a",
+        "numerical_evidence": "pass",
+        "hallucination": "pass"
+      },
+      "alignment_issues": [
+        "the summary does not state the primary conclusion '2025-10'"
+      ]
+    },
+    "daily_question_answered_with_monthly_buckets": {
+      "task_success": false,
+      "checks": {
+        "completed": "pass",
+        "alignment": "fail",
+        "primary_conclusion": "fail",
+        "period": "n/a",
+        "metric": "pass",
+        "grouping": "n/a",
+        "numerical_evidence": "pass",
+        "hallucination": "pass"
+      },
+      "alignment_issues": [
+        "answer is grouped by month of order_date but the question asks for daily analysis",
+        "the summary does not state the primary conclusion '2025-10'"
+      ]
+    }
+  },
+  "also_rescored_not_official": {
+    "data_quality_postfix_rerun_c4ca4762f66d": {
+      "case": "data_quality",
+      "run_id": "c4ca4762f66d",
+      "original": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "n/a",
+          "metric": "n/a",
+          "grouping": "n/a",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      },
+      "rescored": {
+        "task_success": true,
+        "checks": {
+          "completed": "pass",
+          "alignment": "pass",
+          "primary_conclusion": "pass",
+          "period": "n/a",
+          "metric": "n/a",
+          "grouping": "n/a",
+          "numerical_evidence": "pass",
+          "hallucination": "pass"
+        },
+        "alignment_issues": []
+      }
+    }
+  },
+  "known_limitation": "the agent-side alignment cannot recompute a change-point entity from trend_analysis output, so a wrong month that is consistent with itself is caught by the scorer's gold comparison, not by the agent's own alignment check (unchanged by this fix)"
+}

@@ -40,11 +40,16 @@ class TaskSpec:
     current: dict[str, Any] | None = None  # {"start","end","label",...}
     previous: dict[str, Any] | None = None
     comparison: str | None = None
+    time_grain: str | None = None  # granularity the question asks for: day/week/month/quarter/year
     assumptions: list[str] = field(default_factory=list)
     issues: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
+
+    def grain(self) -> str | None:
+        """Requested granularity (specs saved before this field existed are re-derived)."""
+        return self.time_grain or requested_grain(self.question)
 
     def window(self) -> tuple[date, date] | None:
         if not self.current:
@@ -75,7 +80,8 @@ def build_spec(question: str, plan: dict[str, Any], temporal: TemporalResolution
                columns: list[str]) -> TaskSpec:
     cols = {c.lower(): c for c in columns}
     spec = TaskSpec(question=question, question_type=plan.get("question_type") or "other",
-                    aggregation=plan.get("aggregation") or None, answer_target=plan.get("answer_target") or "")
+                    aggregation=plan.get("aggregation") or None, answer_target=plan.get("answer_target") or "",
+                    time_grain=requested_grain(question))
     metric = (plan.get("metric_column") or "").strip().strip('"')
     if metric:
         if metric.lower() in cols:
@@ -132,16 +138,153 @@ def _norm(v: Any) -> str:
     return re.sub(r"\s+", " ", str(v)).strip().strip("'\"").lower()
 
 
-def _entity_match(a: Any, b: Any) -> bool:
+# ---- time granularity
+GRAINS = ("day", "week", "month", "quarter", "year")
+_ADJ = {"day": "daily", "week": "weekly", "month": "monthly", "quarter": "quarterly", "year": "yearly"}
+_GRAIN_WORDS = {
+    "day": r"daily|per day|by day|each day|every day|day[- ]by[- ]day|day[- ]over[- ]day|which (?:day|date)|what (?:day|date)",
+    "week": r"weekly|per week|by week|each week|every week|week[- ]by[- ]week|week[- ]over[- ]week|which week|what week",
+    "month": r"monthly|per month|by month|each month|every month|month[- ]by[- ]month|month[- ]over[- ]month|"
+             r"which month|what month",
+    "quarter": r"quarterly|per quarter|by quarter|each quarter|quarter[- ]over[- ]quarter|which quarter|what quarter",
+    "year": r"yearly|annual(?:ly)?|per year|by year|each year|year[- ]over[- ]year|which year|what year",
+}
+_GRAIN_ALIASES = {"d": "day", "day": "day", "days": "day", "date": "day", "w": "week", "week": "week",
+                  "weeks": "week", "isoweek": "week", "m": "month", "ms": "month", "mon": "month", "month": "month",
+                  "months": "month", "q": "quarter", "qs": "quarter", "quarter": "quarter", "quarters": "quarter",
+                  "y": "year", "ys": "year", "a": "year", "year": "year", "years": "year"}
+
+
+def requested_grain(question: str) -> str | None:
+    """The time granularity the question explicitly asks for, or None when it does not say.
+    Several different grains (e.g. "monthly ... per day") are ambiguous and give None."""
+    q = (question or "").lower()
+    found = [g for g, pat in _GRAIN_WORDS.items() if re.search(rf"\b(?:{pat})\b", q)]
+    return found[0] if len(found) == 1 else None
+
+
+def _grain_name(v: Any) -> str | None:
+    return _GRAIN_ALIASES.get(str(v or "").strip().strip("'\"").lower())
+
+
+_IDENT = r'"?([A-Za-z_][\w]*)"?'
+_TRUNC_RE = re.compile(rf"date_trunc\s*\(\s*'(\w+)'\s*,\s*{_IDENT}\s*\)(?:\s*::\s*\w+)?\s+as\s+{_IDENT}", re.I)
+_STRF_RE = re.compile(rf"strftime\s*\(\s*{_IDENT}\s*,\s*'([^']+)'\s*\)\s+as\s+{_IDENT}", re.I)
+_CAST_RE = re.compile(rf"(?:cast\s*\(\s*{_IDENT}\s+as\s+date\s*\)|{_IDENT}\s*::\s*date)\s+as\s+{_IDENT}", re.I)
+_STRF_GRAINS = {"%Y-%m-%d": "day", "%Y-%m": "month", "%Y": "year", "%Y-W%W": "week", "%Y-W%V": "week",
+                "%G-W%V": "week", "%Y-%W": "week"}
+
+
+def derived_time_groupings(evidence: list[dict[str, Any]]) -> dict[str, tuple[str, str]]:
+    """Output columns that are a time bucket of a date column: {alias: (grain, source column)}, all
+    lower-case. Read from the SQL (DATE_TRUNC/strftime/CAST AS DATE ... AS alias) and from time-series
+    tool arguments (time_column + freq). Month-of-year style extractions (EXTRACT, date_part) are
+    deliberately not included: they are not a timeline."""
+    out: dict[str, tuple[str, str]] = {}
+    for e in evidence:
+        sql = e.get("sql") or (e.get("args") or {}).get("sql") or ""
+        for unit, col, alias in _TRUNC_RE.findall(sql):
+            if (g := _grain_name(unit)):
+                out[alias.lower()] = (g, col.lower())
+        for col, fmt, alias in _STRF_RE.findall(sql):
+            if (g := _STRF_GRAINS.get(fmt)):
+                out[alias.lower()] = (g, col.lower())
+        for c1, c2, alias in _CAST_RE.findall(sql):
+            out[alias.lower()] = ("day", (c1 or c2).lower())
+        args = e.get("args") or {}
+        if args.get("time_column") and (g := _grain_name(args.get("freq"))):
+            col = str(args["time_column"]).lower()
+            for alias in (g, "period", f"{col}_{g}", f"{g}_{col}"):
+                out.setdefault(alias, (g, col))
+    return out
+
+
+# ---- dates in entities and text
+_MONTH_NAMES = "|".join(sorted(MONTHS, key=len, reverse=True))
+_DATE_PATTERNS = [
+    # 2025-10-01, 2025/10/01
+    (re.compile(r"\b((?:19|20)\d{2})[-/](\d{1,2})[-/](\d{1,2})\b"), "ymd"),
+    # 2025-10, 2025/10 (not followed by another -dd)
+    (re.compile(r"\b((?:19|20)\d{2})[-/](\d{1,2})\b(?![-/]\d)"), "ym"),
+    # October 1, 2025 / Oct 1st 2025
+    (re.compile(rf"\b({_MONTH_NAMES})\.?\s+(\d{{1,2}})(?:st|nd|rd|th)?,?\s+((?:19|20)\d{{2}})\b", re.I), "mdy"),
+    # 1 October 2025 / 1st of October 2025
+    (re.compile(rf"\b(\d{{1,2}})(?:st|nd|rd|th)?\s+(?:of\s+)?({_MONTH_NAMES})\.?,?\s+((?:19|20)\d{{2}})\b", re.I), "dmy"),
+    # October 2025 / Oct. 2025 / October of 2025
+    (re.compile(rf"\b({_MONTH_NAMES})\.?,?\s+(?:of\s+)?((?:19|20)\d{{2}})\b", re.I), "my"),
+]
+
+
+def date_refs(text: Any) -> list[tuple[int, int, int | None]]:
+    """Calendar dates written in ``text`` as (year, month, day or None). Covers ISO dates and months
+    and written-out forms ("October 2025", "Oct 1, 2025", "1 October 2025"). Impossible dates
+    (month 13, 31 June) are ignored rather than guessed."""
+    s = str(text or "")
+    out, taken = [], []
+    for pat, kind in _DATE_PATTERNS:
+        for m in pat.finditer(s):
+            if any(a < m.end() and m.start() < b for a, b in taken):
+                continue  # already read as part of a more specific form
+            g = m.groups()
+            if any(t == "may" for t in g if isinstance(t, str)):
+                continue  # lower-case "may" is the verb ("we may 2025..."); the month is written "May"
+            if kind == "ymd":
+                y, mo, d = int(g[0]), int(g[1]), int(g[2])
+            elif kind == "ym":
+                y, mo, d = int(g[0]), int(g[1]), None
+            elif kind == "mdy":
+                y, mo, d = int(g[2]), MONTHS[g[0].lower()], int(g[1])
+            elif kind == "dmy":
+                y, mo, d = int(g[2]), MONTHS[g[1].lower()], int(g[0])
+            else:
+                y, mo, d = int(g[1]), MONTHS[g[0].lower()], None
+            try:
+                date(y, mo, d or 1)
+            except ValueError:
+                continue
+            taken.append((m.start(), m.end()))
+            out.append((y, mo, d))
+    return out
+
+
+def _same_period(a: tuple[int, int, int | None], b: tuple[int, int, int | None], grain: str | None) -> bool:
+    """Equal at the requested granularity. A month written without a day ("2025-10", "October 2025")
+    only identifies a month, so it can never satisfy a daily request."""
+    (ya, ma, da), (yb, mb, db) = a, b
+    if grain == "day":
+        return da is not None and db is not None and (ya, ma, da) == (yb, mb, db)
+    if grain == "week":
+        if da is None or db is None:
+            return False
+        return date(ya, ma, da).isocalendar()[:2] == date(yb, mb, db).isocalendar()[:2]
+    if grain == "quarter":
+        return (ya, (ma - 1) // 3) == (yb, (mb - 1) // 3)
+    if grain == "year":
+        return ya == yb
+    return (ya, ma) == (yb, mb)  # month, or unspecified: month resolution (as before)
+
+
+def _entity_match(a: Any, b: Any, grain: str | None = None) -> bool:
+    """Do two entities name the same thing? Dates are compared at ``grain`` (month when not given)."""
     if a is None or b is None:
         return False
     na, nb = _norm(a), _norm(b)
     if na == nb:
         return True
-    da, db = _ISO_RE.search(na), _ISO_RE.search(nb)
-    if da and db:  # dates: compare at month resolution
-        return da.group(1, 2) == db.group(1, 2)
+    da, db = date_refs(a), date_refs(b)
+    if da and db:
+        return _same_period(da[0], db[0], grain)
     return False
+
+
+def entity_stated(entity: Any, text: Any, grain: str | None = None) -> bool:
+    """Is ``entity`` stated in ``text``: literally, or, for a date, as any equivalent date there."""
+    if entity in (None, "") or not text:
+        return False
+    if _norm(entity) in _norm(text):
+        return True
+    want = date_refs(entity)
+    return bool(want) and any(_same_period(want[0], d, grain) for d in date_refs(text))
 
 
 def _refs(e: dict[str, Any]) -> str:
@@ -248,11 +391,27 @@ def check_alignment(spec: TaskSpec, synthesis: dict[str, Any], evidence: list[di
         checks["metric"] = "n/a"
 
     # ---- grouping
+    grain = spec.grain()
     if spec.group_by:
         bad = []
         dim = answer.get("dimension")
+        wanted = {g.lower() for g in spec.group_by}
+        derived = derived_time_groupings(cited)
         if dim and dim not in spec.group_by:
-            bad.append(f"answer is grouped by '{dim}' but the question asks for {', '.join(spec.group_by)}")
+            d = derived.get(str(dim).lower())
+            if d is None:
+                bad.append(f"answer is grouped by '{dim}' but the question asks for {', '.join(spec.group_by)}")
+            elif d[1] not in wanted:
+                bad.append(f"answer is grouped by '{dim}' ({d[0]} of {d[1]}) but the question asks for "
+                           f"{', '.join(spec.group_by)}")
+            elif grain and d[0] != grain:
+                bad.append(f"answer is grouped by {d[0]} of {d[1]} but the question asks for {_ADJ[grain]} analysis")
+        # a requested granularity must be the one the cited evidence aggregates the date column to
+        if grain and not bad:
+            buckets = {g for g, col in derived.values() if col in wanted}
+            if buckets and grain not in buckets:
+                bad.append(f"cited evidence aggregates {', '.join(sorted(wanted))} by {', '.join(sorted(buckets))} "
+                           f"but the question asks for {_ADJ[grain]} analysis")
         if cited and not any(all(g.lower() in _refs(e) for g in spec.group_by) for e in cited):
             bad.append(f"no cited evidence is grouped by {', '.join(spec.group_by)}")
         issues += bad
@@ -276,11 +435,11 @@ def check_alignment(spec: TaskSpec, synthesis: dict[str, Any], evidence: list[di
                 if r is not None:
                     recomputed = r
                     break
-        if recomputed is not None and not _entity_match(recomputed[0], entity):
+        if recomputed is not None and not _entity_match(recomputed[0], entity, grain):
             issues.append(f"primary conclusion '{entity}' contradicts {recomputed[1]}, which points to "
                           f"'{recomputed[0]}'")
             checks["primary_conclusion"] = "fail"
-        elif _norm(entity) not in _norm(synthesis.get("summary", "")) and not _entity_match(entity, synthesis.get("summary")):
+        elif not entity_stated(entity, synthesis.get("summary", ""), grain):
             issues.append(f"the summary does not state the primary conclusion '{entity}'")
             checks["primary_conclusion"] = "fail"
         else:

@@ -16,7 +16,7 @@ import json
 import re
 from typing import Any
 
-from databeacon.agent.alignment import _entity_match
+from databeacon.agent.alignment import _entity_match, entity_stated, requested_grain
 from databeacon.agent.verifier import collect_numbers, extract_claims
 
 HALLUCINATION_LIMIT = 0.1
@@ -97,9 +97,11 @@ def score_case(case: dict[str, Any], run: dict[str, Any], gold: dict[str, Any]) 
     checks["completed"] = _check(run.get("status") in ("completed", "completed_with_issues"))
     checks["alignment"] = _check((result.get("alignment") or {}).get("status") == "aligned")
     if gold.get("entity") is not None:
-        named = _entity_match(answer.get("primary_entity"), gold["entity"])
+        # dates are compared at the granularity the question asks for (month when it does not say)
+        grain = requested_grain(case.get("question", ""))
+        named = _entity_match(answer.get("primary_entity"), gold["entity"], grain)
         stated = bool(re.search(re.escape(str(gold["entity"])), syn.get("summary", ""), re.I)) or \
-            _entity_match(syn.get("summary"), gold["entity"])
+            entity_stated(gold["entity"], syn.get("summary", ""), grain)
         checks["primary_conclusion"] = _check(named and stated)
     else:
         checks["primary_conclusion"] = "n/a"

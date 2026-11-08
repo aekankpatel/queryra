@@ -43,3 +43,21 @@ def test_anomalies_and_correlation():
     assert an["anomaly_count"] == 1 and an["anomalies"][0]["value"] == 95
     corr = A.correlation(df.assign(z=lambda d: d.w * 2 + 1))
     assert corr["pairs"][0]["coefficient"] == 1.0
+
+
+def test_preview_handles_every_tool_output_shape():
+    """Regression: descriptive_statistics returns {"rows": n, "columns": {name: stats}}; the
+    preview indexed it like a list and the KeyError aborted a live investigation."""
+    import pandas as pd
+
+    from databeacon.agent.evidence import preview_table, summarize
+    from databeacon.analysis import describe
+
+    stats = describe(pd.DataFrame({"revenue": [1.0, 2.0, None], "units": [1, 2, 3], "seg": list("abc")}))
+    p = preview_table(stats)
+    assert p["columns"][0] == "column" and "mean" in p["columns"]
+    assert [r[0] for r in p["rows"]] == ["revenue", "units"]
+    for odd in ({"columns": {}, "rows": 3}, {"columns": [], "rows": []}, {"segments": ["x"]},
+                {"data": {"rows": 1}}, {"columns": {"a": 1}, "rows": 2}, [], None, "text"):
+        preview_table(odd)  # never raises
+    assert summarize("descriptive_statistics", stats)

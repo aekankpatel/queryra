@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from datetime import date
 from typing import Any, TypedDict
@@ -75,6 +76,19 @@ def normalize_call(name: str, args: dict[str, Any]) -> str:
             v = re.sub(r"\s+", " ", v).strip().rstrip(";").strip().lower()
         norm[k] = v
     return name + json.dumps(norm, sort_keys=True, default=str)
+
+
+log = logging.getLogger(__name__)
+
+
+def _safe(fn, *args, default=None):
+    """Summaries and previews are for display only: a tool result of an unexpected shape must never
+    abort the investigation."""
+    try:
+        return fn(*args)
+    except Exception:  # noqa: BLE001
+        log.warning("could not format %s output", fn.__name__, exc_info=True)
+        return default
 
 
 class AnalystAgent:
@@ -249,8 +263,8 @@ class AnalystAgent:
             "data": data, "elapsed_ms": round(result.elapsed_ms, 2), "iteration": state.get("iteration", 1),
             "purpose": purpose or args.get("purpose") or args.get("title") or "",
             "sql": args.get("sql") or (data.get("sql") if isinstance(data, dict) else None),
-            "summary": summarize(tool, data) if result.ok else result.error,
-            "preview": preview_table(data) if result.ok else None,
+            "summary": _safe(summarize, tool, data, default=str(data)[:300]) if result.ok else result.error,
+            "preview": _safe(preview_table, data) if result.ok else None,
         }
         state["evidence"].append(entry)
         if result.ok and tool == "create_chart" and isinstance(data, dict):

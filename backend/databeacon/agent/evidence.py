@@ -72,14 +72,21 @@ def digest_view(tool: str, data: Any) -> Any:
 def preview_table(data: Any) -> dict[str, Any] | None:
     if not isinstance(data, dict):
         return None
-    if "columns" in data and "rows" in data and data["columns"] and not isinstance(data["columns"][0], dict):
-        return {"columns": data["columns"], "rows": data["rows"][:20]}
-    if data.get("segments"):
-        segs = data["segments"]
-        cols = list(segs[0].keys())
-        return {"columns": cols, "rows": [[s.get(c) for c in cols] for s in segs[:20]]}
-    if isinstance(data.get("data"), dict) and "rows" in data["data"]:
-        return {"columns": data["data"]["columns"], "rows": data["data"]["rows"][:20]}
+    cols, rows = data.get("columns"), data.get("rows")
+    if isinstance(cols, list) and cols and isinstance(rows, list) and not isinstance(cols[0], dict):
+        return {"columns": cols, "rows": rows[:20]}
+    if isinstance(cols, dict) and cols and all(isinstance(v, dict) for v in cols.values()):
+        # per-column statistics, e.g. descriptive_statistics: {"rows": n, "columns": {name: {stat: v}}}
+        stats = list(dict.fromkeys(k for v in cols.values() for k in v))
+        return {"columns": ["column", *stats],
+                "rows": [[name, *(v.get(k) for k in stats)] for name, v in list(cols.items())[:20]]}
+    segs = data.get("segments")
+    if isinstance(segs, list) and segs and isinstance(segs[0], dict):
+        keys = list(segs[0].keys())
+        return {"columns": keys, "rows": [[s.get(c) for c in keys] for s in segs[:20] if isinstance(s, dict)]}
+    inner = data.get("data")
+    if isinstance(inner, dict) and isinstance(inner.get("rows"), list) and isinstance(inner.get("columns"), list):
+        return {"columns": inner["columns"], "rows": inner["rows"][:20]}
     return None
 
 

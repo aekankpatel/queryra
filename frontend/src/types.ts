@@ -15,6 +15,8 @@ export interface SampleDataset {
   file: string;
   description?: string;
   source?: string;
+  source_url?: string;
+  via_url?: string;
   license?: string;
   examples: string[];
 }

@@ -271,7 +271,8 @@ def create_app(manager: RunManager | None = None) -> FastAPI:
     @app.get("/api/samples")
     async def list_samples() -> list[dict[str, Any]]:
         """Sample datasets that can be loaded with POST /api/datasets/sample?sample=<id>."""
-        return [{k: i.get(k) for k in ("id", "name", "file", "description", "source", "license", "examples")}
+        return [{k: i.get(k) for k in ("id", "name", "file", "description", "source", "source_url", "via_url",
+                                       "license", "examples")}
                 for i in sample_catalog()]
 
     @app.post("/api/datasets/sample", status_code=201)

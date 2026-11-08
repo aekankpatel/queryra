@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import type { Dataset, SampleDataset } from "../types";
+import { SampleSource } from "./SampleSource";
 
 interface Props {
   datasets: Dataset[];
@@ -21,6 +22,7 @@ export function Sidebar({ datasets, selected, onSelect, onChanged, maxUploadMb }
   useEffect(() => {
     api.samples().then(setSamples).catch(() => setSamples([]));
   }, []);
+  const picked = samples.find((s) => s.id === pick);
 
   async function upload(file: File) {
     if (maxUploadMb && file.size > maxUploadMb * 1024 * 1024) {
@@ -104,10 +106,10 @@ export function Sidebar({ datasets, selected, onSelect, onChanged, maxUploadMb }
         </select>
         <button className="btn" onClick={sample} disabled={busy}>Load</button>
       </div>
-      {samples.find((s) => s.id === pick)?.description && (
-        <div className="small muted">
-          {samples.find((s) => s.id === pick)!.description}{" "}
-          <span title={samples.find((s) => s.id === pick)!.source}>({samples.find((s) => s.id === pick)!.license})</span>
+      {picked && (
+        <div className="small muted stack" style={{ gap: 2 }}>
+          {picked.description && <span>{picked.description}</span>}
+          <SampleSource sample={picked} />
         </div>
       )}
       {error && <div className="error-box small">{error}</div>}

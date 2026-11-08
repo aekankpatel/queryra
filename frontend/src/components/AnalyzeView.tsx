@@ -8,6 +8,7 @@ import type {
 import { EvidenceDrawer } from "./EvidenceDrawer";
 import { Findings, VerificationBadge } from "./Findings";
 import { PlotlyChart } from "./PlotlyChart";
+import { SampleSource } from "./SampleSource";
 import { Timeline } from "./Timeline";
 
 const EXAMPLES = [
@@ -196,6 +197,7 @@ export function AnalyzeView({ dataset }: { dataset: Dataset }) {
       <div className="stack">
         <div className="card ask">
           <h3>Ask a question about <span className="mono">{dataset.name}</span></h3>
+          {sample?.source && <div style={{ margin: "-6px 0 8px" }}><SampleSource sample={sample} /></div>}
           <textarea
             value={question}
             placeholder="e.g. Why did revenue decline last quarter, and which segments contributed most?"

@@ -24,6 +24,8 @@ def test_catalog_entries_are_complete_and_documented():
     for s in CATALOG:
         assert s["name"] and s["license"] and s["source"] and len(s["examples"]) >= 3
         assert s["file"] in sources  # every file has a source and licence on record
+        assert s["source_url"].startswith("https://")
+        assert s.get("via_url", "https://").startswith("https://")
     for s in BUNDLED:
         path = SAMPLE_DIR / s["file"]
         assert path.is_file() and path.stat().st_size < 1_000_000  # small enough for the function bundle

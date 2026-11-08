@@ -1,5 +1,6 @@
-import { useState } from "react";
-import type { Health } from "../types";
+import { useEffect, useState } from "react";
+import { api } from "../api";
+import type { Health, SampleDataset } from "../types";
 import { ReplayList } from "./ReplayView";
 
 const STEPS = [
@@ -10,10 +11,25 @@ const STEPS = [
 ];
 
 export function Welcome({ health, onSample, onReplay }: {
-  health: Health | null; onSample: () => Promise<void>; onReplay: (id: string) => void;
+  health: Health | null; onSample: (id?: string) => Promise<void>; onReplay: (id: string) => void;
 }) {
+  const [samples, setSamples] = useState<SampleDataset[]>([]);
+  useEffect(() => {
+    api.samples().then(setSamples).catch(() => setSamples([]));
+  }, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  async function load(id?: string) {
+    setBusy(true);
+    setError(null);
+    try {
+      await onSample(id);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <div className="stack" style={{ maxWidth: 860 }}>
       <div className="card">
@@ -23,17 +39,7 @@ export function Welcome({ health, onSample, onReplay }: {
           the agent plan, query, test and verify its way to an evidence-backed answer.
         </p>
         <div className="row" style={{ marginTop: 14 }}>
-          <button className="btn primary" disabled={busy || !health || health.replay_only} onClick={async () => {
-            setBusy(true);
-            setError(null);
-            try {
-              await onSample();
-            } catch (e) {
-              setError((e as Error).message);
-            } finally {
-              setBusy(false);
-            }
-          }}>
+          <button className="btn primary" disabled={busy || !health || health.replay_only} onClick={() => load()}>
             {busy ? "Loading sample…" : "Try it with sample e-commerce data"}
           </button>
           <span className="small muted">
@@ -41,6 +47,17 @@ export function Welcome({ health, onSample, onReplay }: {
             {health?.limits ? ` (up to ${health.limits.max_upload_mb} MB)` : ""}.
           </span>
         </div>
+        {samples.length > 1 && (
+          <div className="row" style={{ marginTop: 10, flexWrap: "wrap", gap: 6 }}>
+            <span className="small muted">More sample datasets:</span>
+            {samples.filter((x) => x.id !== "ecommerce").map((x) => (
+              <button key={x.id} className="btn small" title={`${x.description ?? ""} Source: ${x.source ?? "-"} (${x.license ?? "-"})`}
+                      disabled={busy || !health || health.replay_only} onClick={() => load(x.id)}>
+                {x.name}
+              </button>
+            ))}
+          </div>
+        )}
         {error && <div className="error-box small" style={{ marginTop: 10 }}>{error}</div>}
       </div>
       <div className="metrics">

@@ -1,6 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
-import type { Dataset } from "../types";
+import type { Dataset, SampleDataset } from "../types";
 
 interface Props {
   datasets: Dataset[];
@@ -14,7 +14,13 @@ export function Sidebar({ datasets, selected, onSelect, onChanged, maxUploadMb }
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [over, setOver] = useState(false);
+  const [samples, setSamples] = useState<SampleDataset[]>([]);
+  const [pick, setPick] = useState("ecommerce");
   const input = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    api.samples().then(setSamples).catch(() => setSamples([]));
+  }, []);
 
   async function upload(file: File) {
     if (maxUploadMb && file.size > maxUploadMb * 1024 * 1024) {
@@ -37,7 +43,7 @@ export function Sidebar({ datasets, selected, onSelect, onChanged, maxUploadMb }
     setBusy(true);
     setError(null);
     try {
-      const ds = await api.loadSample();
+      const ds = await api.loadSample(pick);
       onChanged(ds.id);
     } catch (e) {
       setError((e as Error).message);
@@ -88,7 +94,22 @@ export function Sidebar({ datasets, selected, onSelect, onChanged, maxUploadMb }
           }}
         />
       </div>
-      <button className="btn" onClick={sample} disabled={busy}>Load sample e-commerce data</button>
+      <div className="section-title" style={{ marginTop: 4 }}>Sample datasets</div>
+      <div className="row" style={{ gap: 6 }}>
+        <select className="sample-select" style={{ flex: 1, minWidth: 0 }} value={pick} aria-label="Sample dataset"
+                onChange={(e) => setPick(e.target.value)} disabled={busy}>
+          {(samples.length ? samples : [{ id: "ecommerce", name: "E-commerce orders (sample)" }]).map((s) => (
+            <option key={s.id} value={s.id}>{s.name}</option>
+          ))}
+        </select>
+        <button className="btn" onClick={sample} disabled={busy}>Load</button>
+      </div>
+      {samples.find((s) => s.id === pick)?.description && (
+        <div className="small muted">
+          {samples.find((s) => s.id === pick)!.description}{" "}
+          <span title={samples.find((s) => s.id === pick)!.source}>({samples.find((s) => s.id === pick)!.license})</span>
+        </div>
+      )}
       {error && <div className="error-box small">{error}</div>}
       {datasets.length === 0 && <div className="muted small">No datasets yet.</div>}
       {datasets.map((d) => (

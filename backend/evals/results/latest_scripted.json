@@ -1,6 +1,6 @@
 {
   "meta": {
-    "timestamp": "2026-11-08T07:59:32+00:00",
+    "timestamp": "2026-11-08T20:10:28+00:00",
     "mode": "scripted",
     "provider": "scripted",
     "model": "scripted",
@@ -26,8 +26,8 @@
     "sql_validity": 0.584,
     "tool_selection_f1": 1.0,
     "hallucination_rate": 0.0,
-    "avg_latency_s": 0.835,
-    "avg_total_tokens": 25747.5,
+    "avg_latency_s": 1.215,
+    "avg_total_tokens": 25753.0,
     "avg_tool_calls": 8.5,
     "error_recovery_rate": 1.0,
     "scorer_calibration": 1.0,
@@ -85,8 +85,8 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 1.09,
-      "total_tokens": 20265,
+      "latency_s": 1.61,
+      "total_tokens": 20269,
       "tokens_by_stage": {
         "plan": {
           "calls": 1,
@@ -95,7 +95,7 @@
         },
         "act": {
           "calls": 8,
-          "input_tokens": 11023,
+          "input_tokens": 11025,
           "output_tokens": 172
         },
         "reflect": {
@@ -105,7 +105,7 @@
         },
         "synthesize": {
           "calls": 2,
-          "input_tokens": 4016,
+          "input_tokens": 4018,
           "output_tokens": 875
         }
       },
@@ -190,7 +190,7 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.47,
+      "latency_s": 0.64,
       "total_tokens": 29425,
       "tokens_by_stage": {
         "plan": {
@@ -294,7 +294,7 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.63,
+      "latency_s": 0.79,
       "total_tokens": 29709,
       "tokens_by_stage": {
         "plan": {
@@ -396,8 +396,8 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.58,
-      "total_tokens": 31230,
+      "latency_s": 0.82,
+      "total_tokens": 31237,
       "tokens_by_stage": {
         "plan": {
           "calls": 1,
@@ -406,17 +406,17 @@
         },
         "act": {
           "calls": 12,
-          "input_tokens": 19376,
+          "input_tokens": 19381,
           "output_tokens": 264
         },
         "reflect": {
           "calls": 3,
-          "input_tokens": 4914,
+          "input_tokens": 4915,
           "output_tokens": 201
         },
         "synthesize": {
           "calls": 2,
-          "input_tokens": 4479,
+          "input_tokens": 4480,
           "output_tokens": 867
         }
       },

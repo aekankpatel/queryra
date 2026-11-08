@@ -130,8 +130,8 @@ export default function App() {
                 </div>
               )
           ) : needsDataset && !dataset ? (
-            <Welcome health={health} onReplay={openReplay} onSample={async () => {
-              const ds = await api.loadSample();
+            <Welcome health={health} onReplay={openReplay} onSample={async (id?: string) => {
+              const ds = await api.loadSample(id);
               await refresh(ds.id);
               setTab("analyze");
             }} />

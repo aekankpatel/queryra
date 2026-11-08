@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api, type StreamMessage } from "../api";
 import { fmtNum } from "../format";
 import type {
-  Alignment, Chart, Clarification, Dataset, Evidence, Plan, Reflection, Run, RunSummary, TaskSpec, TimelineEvent,
+  Alignment, Chart, Clarification, Dataset, Evidence, Plan, Reflection, Run, RunSummary, SampleDataset, TaskSpec,
+  TimelineEvent,
 } from "../types";
 import { EvidenceDrawer } from "./EvidenceDrawer";
 import { Findings, VerificationBadge } from "./Findings";
@@ -13,6 +14,12 @@ const EXAMPLES = [
   "Why did our revenue decline last quarter, and which customer segments contributed most?",
   "Which product category saw the largest increase in discounting recently?",
   "Which region has the slowest shipping, and is the difference significant?",
+  "Are there data quality problems such as missing values or outliers?",
+];
+// questions for datasets that are not one of the samples
+const GENERIC_EXAMPLES = [
+  "What are the most important trends in this data?",
+  "Which group has the highest average value, and is the difference significant?",
   "Are there data quality problems such as missing values or outliers?",
 ];
 
@@ -28,6 +35,13 @@ const emptyLive = (): Live => ({ events: [], reflections: [], charts: [], eviden
 
 export function AnalyzeView({ dataset }: { dataset: Dataset }) {
   const [question, setQuestion] = useState("");
+  const [samples, setSamples] = useState<SampleDataset[] | null>(null);
+  useEffect(() => {
+    api.samples().then(setSamples).catch(() => setSamples([]));
+  }, []);
+  const sample = samples?.find((s) => s.name === dataset.name);
+  const examples = sample?.examples?.length ? sample.examples
+    : dataset.name === "E-commerce orders (sample)" ? EXAMPLES : GENERIC_EXAMPLES;
   const [runId, setRunId] = useState<string | null>(null);
   const [run, setRun] = useState<Run | null>(null);
   const [live, setLive] = useState<Live>(emptyLive);
@@ -192,7 +206,7 @@ export function AnalyzeView({ dataset }: { dataset: Dataset }) {
           />
           <div className="row" style={{ justifyContent: "space-between", marginTop: 8 }}>
             <div className="chips">
-              {EXAMPLES.map((q) => (
+              {examples.map((q) => (
                 <span key={q} className="chip" onClick={() => setQuestion(q)}>{q}</span>
               ))}
             </div>

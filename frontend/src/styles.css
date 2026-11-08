@@ -213,3 +213,8 @@ table.data td.num { text-align: right; font-variant-numeric: tabular-nums; }
 .dataset .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .footer { margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--border); }
 .footer a { color: var(--muted); text-decoration: underline; }
+
+.sample-select {
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; background: var(--panel-2); outline: none;
+}
+.sample-select:focus { border-color: var(--accent); }

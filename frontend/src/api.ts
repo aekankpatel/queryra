@@ -1,4 +1,4 @@
-import type { Catalog, Dataset, Health, Profile, Replay, ReplaySummary, Run, RunSummary } from "./types";
+import type { Catalog, Dataset, Health, Profile, Replay, ReplaySummary, Run, RunSummary, SampleDataset } from "./types";
 
 const BASE = (import.meta.env.VITE_API_BASE ?? "").replace(/\/$/, "");
 const SESSION_KEY = "databeacon.session";
@@ -150,6 +150,8 @@ async function streamRequest(path: string, init: RequestInit, onMessage: (m: Str
   return res;
 }
 
+let samplesCache: Promise<SampleDataset[]> | null = null;
+
 const withSession = (path: string) => `${BASE}${path}?session=${encodeURIComponent(sessionToken())}`;
 
 export const api = {
@@ -162,7 +164,15 @@ export const api = {
     if (name) fd.append("name", name);
     return req<Dataset>("/api/datasets", { method: "POST", body: fd });
   },
-  loadSample: () => req<Dataset>("/api/datasets/sample", { method: "POST" }),
+  samples: () => {
+    samplesCache ??= req<SampleDataset[]>("/api/samples").catch((e) => {
+      samplesCache = null;
+      throw e;
+    });
+    return samplesCache;
+  },
+  loadSample: (sample = "ecommerce") =>
+    req<Dataset>(`/api/datasets/sample?sample=${encodeURIComponent(sample)}`, { method: "POST" }),
   deleteDataset: (id: string) => req<void>(`/api/datasets/${id}`, { method: "DELETE" }),
   profile: (id: string) => req<Profile>(`/api/datasets/${id}/profile`),
   sql: (id: string, sql: string) =>

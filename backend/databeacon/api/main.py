@@ -43,8 +43,20 @@ from .security import (
     session_owner,
 )
 
-SAMPLE_CSV = Path(__file__).resolve().parents[2] / "sample_data" / "ecommerce_orders.csv"
+SAMPLE_DIR = Path(__file__).resolve().parents[2] / "sample_data"
+SAMPLE_CSV = SAMPLE_DIR / "ecommerce_orders.csv"
 SAMPLE_NAME = "E-commerce orders (sample)"
+
+
+def sample_catalog() -> list[dict[str, Any]]:
+    """Bundled sample datasets (sample_data/catalog.json); the e-commerce sample is generated if absent."""
+    try:
+        items = json.loads((SAMPLE_DIR / "catalog.json").read_text())
+    except (OSError, ValueError):
+        items = []
+    if not any(i.get("id") == "ecommerce" for i in items):
+        items.insert(0, {"id": "ecommerce", "name": SAMPLE_NAME, "file": SAMPLE_CSV.name, "examples": []})
+    return [i for i in items if i["id"] == "ecommerce" or (SAMPLE_DIR / i["file"]).is_file()]
 EVALS_DIR = Path(__file__).resolve().parents[2] / "evals" / "results"
 CLEANUP_EVERY_S = 600
 log = logging.getLogger("databeacon.api")
@@ -256,13 +268,28 @@ def create_app(manager: RunManager | None = None) -> FastAPI:
             shutil.rmtree(tmpdir, ignore_errors=True)
         return _public_ds(ds)
 
+    @app.get("/api/samples")
+    async def list_samples() -> list[dict[str, Any]]:
+        """Sample datasets that can be loaded with POST /api/datasets/sample?sample=<id>."""
+        return [{k: i.get(k) for k in ("id", "name", "file", "description", "source", "license", "examples")}
+                for i in sample_catalog()]
+
     @app.post("/api/datasets/sample", status_code=201)
-    async def load_sample(owner: str = Depends(owner_of), ip: str = Depends(ip_of)) -> dict[str, Any]:
-        existing = next((d for d in registry.list(owner) if d.name == SAMPLE_NAME), None)
-        if existing:  # one sample copy per session
+    async def load_sample(sample: str = "ecommerce", owner: str = Depends(owner_of),
+                          ip: str = Depends(ip_of)) -> dict[str, Any]:
+        item = next((i for i in sample_catalog() if i["id"] == sample), None)
+        if item is None:
+            raise HTTPException(404, f"Unknown sample dataset '{sample}'")
+        name = item.get("name") or SAMPLE_NAME
+        existing = next((d for d in registry.list(owner) if d.name == name), None)
+        if existing:  # one copy of each sample per session
             return _public_ds(existing)
         shared_limiter.hit(f"upload:{ip}", settings.uploads_per_hour, 3600, "uploads")
         _quota(owner)
+        if item["id"] != "ecommerce":
+            path = SAMPLE_DIR / item["file"]
+            ds = await asyncio.to_thread(_ingest, path, name, path.name, owner)
+            return _public_ds(ds)
         sample = SAMPLE_CSV if SAMPLE_CSV.exists() else settings.data_dir / "sample" / "ecommerce_orders.csv"
         if not sample.exists():  # not bundled: generate (deterministically) into the writable data dir
             from sample_data.generate_ecommerce import generate

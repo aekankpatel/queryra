@@ -9,6 +9,16 @@ export interface Dataset {
   columns: { name: string; type: string }[];
 }
 
+export interface SampleDataset {
+  id: string;
+  name: string;
+  file: string;
+  description?: string;
+  source?: string;
+  license?: string;
+  examples: string[];
+}
+
 export interface ColumnProfile {
   name: string;
   type: string;

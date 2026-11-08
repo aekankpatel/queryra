@@ -1,6 +1,6 @@
 {
   "meta": {
-    "timestamp": "2026-11-08T00:55:05+00:00",
+    "timestamp": "2026-11-08T07:08:47+00:00",
     "mode": "scripted",
     "provider": "scripted",
     "model": "scripted",
@@ -26,8 +26,8 @@
     "sql_validity": 0.584,
     "tool_selection_f1": 1.0,
     "hallucination_rate": 0.0,
-    "avg_latency_s": 0.925,
-    "avg_total_tokens": 25761.5,
+    "avg_latency_s": 0.805,
+    "avg_total_tokens": 25763.0,
     "avg_tool_calls": 8.5,
     "error_recovery_rate": 1.0,
     "scorer_calibration": 1.0,
@@ -85,7 +85,7 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 1.23,
+      "latency_s": 1.05,
       "total_tokens": 20278,
       "tokens_by_stage": {
         "plan": {
@@ -190,7 +190,7 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.52,
+      "latency_s": 0.46,
       "total_tokens": 29440,
       "tokens_by_stage": {
         "plan": {
@@ -294,7 +294,7 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.59,
+      "latency_s": 0.56,
       "total_tokens": 29722,
       "tokens_by_stage": {
         "plan": {
@@ -396,17 +396,17 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.62,
-      "total_tokens": 31245,
+      "latency_s": 0.56,
+      "total_tokens": 31248,
       "tokens_by_stage": {
         "plan": {
           "calls": 1,
-          "input_tokens": 932,
+          "input_tokens": 933,
           "output_tokens": 197
         },
         "act": {
           "calls": 12,
-          "input_tokens": 19386,
+          "input_tokens": 19388,
           "output_tokens": 264
         },
         "reflect": {

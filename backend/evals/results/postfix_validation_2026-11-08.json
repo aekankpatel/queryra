@@ -1,0 +1,223 @@
+{
+  "title": "Post-fix validation (not part of the official benchmark)",
+  "official_benchmark": {
+    "file": "benchmark_cloudflare_gpt-oss-120b_2026-11-07_resumed.json",
+    "result": "4/6",
+    "unchanged": true
+  },
+  "data_quality_rerun": {
+    "run_id": "c4ca4762f66d",
+    "meta": {
+      "timestamp": "2026-11-08T07:06:55+00:00",
+      "mode": "live",
+      "provider": "cloudflare",
+      "model": "@cf/openai/gpt-oss-120b",
+      "budgets": {
+        "max_iterations": 2,
+        "max_tool_calls": 24,
+        "max_steps_per_iteration": 6
+      },
+      "incomplete": null,
+      "budget": {
+        "neurons_used_today_before": 5175.4,
+        "run_cap": 3500.0,
+        "prior_spend": 0.0,
+        "hard_daily_limit_for_run": 8675.421863079071,
+        "free_allocation": 10000,
+        "preflight": {
+          "ok": true,
+          "detail": "ok",
+          "neurons": 5.5
+        },
+        "neurons_spent": 1016.6
+      }
+    },
+    "case": {
+      "case": "data_quality",
+      "status": "completed",
+      "task_success": true,
+      "checks": {
+        "completed": "pass",
+        "alignment": "pass",
+        "primary_conclusion": "pass",
+        "period": "n/a",
+        "metric": "n/a",
+        "grouping": "n/a",
+        "numerical_evidence": "pass",
+        "hallucination": "pass"
+      },
+      "expected": {
+        "entity": "days_to_ship",
+        "dimension": null,
+        "metric_column": null,
+        "current_period": null,
+        "previous_period": null
+      },
+      "got": {
+        "primary_entity": "days_to_ship",
+        "dimension": "column",
+        "metric_column": "missing_rows",
+        "current_period": [
+          "2024-01-01",
+          "2025-12-31"
+        ],
+        "previous_period": []
+      },
+      "error": null,
+      "alignment_issues": [],
+      "sql_validity": 1.0,
+      "numbers_stated": 1.0,
+      "tool_selection": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      },
+      "hallucination_rate": 0.0,
+      "findings_verified": "5/5",
+      "latency_s": 38.98,
+      "total_tokens": 27444,
+      "tokens_by_stage": {
+        "plan": {
+          "calls": 1,
+          "input_tokens": 962,
+          "output_tokens": 836
+        },
+        "act": {
+          "calls": 6,
+          "input_tokens": 17830,
+          "output_tokens": 1221
+        },
+        "reflect": {
+          "calls": 1,
+          "input_tokens": 2208,
+          "output_tokens": 657
+        },
+        "synthesize": {
+          "calls": 1,
+          "input_tokens": 2502,
+          "output_tokens": 1228
+        }
+      },
+      "llm_calls": 9,
+      "tool_calls": 7,
+      "agent_tool_calls": 6,
+      "fallback_charts": 0,
+      "iterations": 1,
+      "trajectory": {
+        "profiled_first": true,
+        "duplicate_calls": 0,
+        "duplicates_blocked": 0,
+        "tool_errors": 0,
+        "errors_recovered": 0,
+        "replans": 0,
+        "realignments": 0,
+        "revisions": 0
+      },
+      "tools_used": [
+        "run_sql",
+        "detect_anomalies",
+        "descriptive_statistics",
+        "detect_anomalies",
+        "detect_anomalies",
+        "run_sql"
+      ],
+      "expect_success": true,
+      "cloudflare_neurons": 1016.6,
+      "served_by": {
+        "cloudflare:@cf/openai/gpt-oss-120b": 9
+      }
+    },
+    "replaces_official_result": false,
+    "note": "Explicitly approved rerun after fixing preview_table (KeyError: 0 on descriptive_statistics output). Same model, agent configuration, ground truth and scoring. An earlier invocation with a 2,000-neuron cap stopped before the case (the harness reserves a 3,000-neuron worst case per case); only its 5.5-neuron preflight ran."
+  },
+  "revenue_trend_investigation": {
+    "run_id": "b956ca14649a",
+    "question": "Is monthly revenue trending up or down, and when did the most significant shift happen?",
+    "gold": {
+      "entity": "2025-10-01",
+      "metric_column": "revenue",
+      "note": "month where the planted Q4-2025 drop begins"
+    },
+    "task_spec": {
+      "question_type": "trend",
+      "metric_column": "revenue",
+      "aggregation": "sum",
+      "group_by": [
+        "order_date"
+      ],
+      "answer_target": "month with the most significant revenue shift"
+    },
+    "evidence": {
+      "E1": "run_sql: SUM(revenue) by DATE_TRUNC('month', order_date), 24 months",
+      "E2": "trend_analysis(order_date, revenue, month, sum): slope -1037.47/month, R2 0.023, p 0.476, Mann-Kendall p 0.337, direction decreasing, not significant, change_point 2025-10-01 mean_shift -60712.17",
+      "E3": "run_sql: largest month-over-month absolute change = 2025-03 (+96,805, +28.5%)",
+      "E4": "create_chart: monthly revenue line"
+    },
+    "answer": {
+      "primary_entity": "2025-10",
+      "dimension": "month",
+      "metric_column": "revenue",
+      "direction": "change_point",
+      "key_value": -60712.17,
+      "evidence_ids": [
+        "E2"
+      ]
+    },
+    "verification": {
+      "findings_verified": "3/3",
+      "numeric_claims_supported": "9/9",
+      "hallucination_rate": 0.0
+    },
+    "failed_assertions": [
+      {
+        "where": "agent task-alignment (databeacon/agent/alignment.py, grouping)",
+        "assertion": "answer.dimension in spec.group_by",
+        "values": [
+          "month",
+          [
+            "order_date"
+          ]
+        ],
+        "message": "answer is grouped by 'month' but the question asks for order_date"
+      },
+      {
+        "where": "agent task-alignment (primary conclusion)",
+        "assertion": "_norm(entity) in _norm(summary) or _entity_match(entity, summary)",
+        "values": [
+          "2025-10",
+          "...occurs in October 2025..."
+        ],
+        "message": "the summary does not state the primary conclusion '2025-10'"
+      },
+      {
+        "where": "scorer primary_conclusion (evals/metrics.py)",
+        "assertion": "_entity_match(answer.primary_entity, gold.entity) and gold entity stated in summary",
+        "values": [
+          "_entity_match('2025-10','2025-10-01') = False (date regex requires YYYY-MM-DD)",
+          "summary has 'October 2025', no ISO date = False"
+        ]
+      },
+      {
+        "where": "scorer alignment",
+        "assertion": "run alignment status == 'aligned'",
+        "values": [
+          "misaligned (from the two agent-side issues above)"
+        ]
+      }
+    ],
+    "verdict": "evaluator too restrictive, not an analytical mistake",
+    "reasons": [
+      "monthly aggregation of order_date is what the question asks; 'month' is DATE_TRUNC('month', order_date)",
+      "change point 2025-10-01 equals the gold month; '2025-10' is the same month at month resolution",
+      "'October 2025' is the same month written out",
+      "the direction answer (slightly decreasing, not significant) is supported by E2; all 9 numeric claims verified",
+      "the agent preferred the sustained mean shift (E2) over the single largest month-over-month jump (E3, March 2025), which matches the gold definition"
+    ],
+    "proposed_evaluator_changes_not_applied": [
+      "treat a time grain derived from the requested date column (month/quarter/week of order_date) as matching that grouping",
+      "compare YYYY-MM with YYYY-MM-DD at month resolution",
+      "recognise written month names ('October 2025', 'Oct 2025') when checking that the summary states a month"
+    ],
+    "user_impact": "the same check runs in the product: this run shows as 'completed with issues / misaligned' to a user although the answer is right"
+  }
+}

@@ -12,7 +12,7 @@ import type { Dataset, Health } from "./types";
 type Tab = "analyze" | "replays" | "data" | "tools" | "evals";
 const TABS: [Tab, string][] = [["analyze", "Analyze"], ["replays", "Recorded"], ["data", "Data"], ["tools", "MCP Tools"],
   ["evals", "Evaluation"]];
-const REPO_URL = import.meta.env.VITE_REPO_URL ?? "https://github.com/aekankpatel/databeacon";
+const REPO_URL = import.meta.env.VITE_REPO_URL ?? "https://github.com/aekankpatel/queryra";
 
 export default function App() {
   const [datasets, setDatasets] = useState<Dataset[]>([]);

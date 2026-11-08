@@ -157,7 +157,7 @@ billing beyond the allocation. Leave `DATABEACON_ALLOW_PAID_INFERENCE` unset.
 4. Confirm *Workers & Pages → Plans* shows **Workers Free**.
 
 ### Vercel (vercel.com, Hobby)
-1. *Add New → Project* → import `aekankpatel/databeacon`. **Root Directory: the repository root**
+1. *Add New → Project* → import `aekankpatel/queryra`. **Root Directory: the repository root**
    (not `frontend`). `vercel.json` sets the build, output, function (`maxDuration` 300), rewrites and
    security headers. Leave the framework preset as detected ("Other" is fine).
 2. **Environment variables** (Production):

@@ -9,8 +9,8 @@ the actual tool outputs, and hands you a PDF report.
 Live demo: **https://queryra.vercel.app**
 
 > Queryra was developed as *DataBeacon*. Internal identifiers keep that name so existing
-> configuration keeps working: the repository, the Python package `databeacon`, the `DATABEACON_*`
-> environment variables and the `X-DataBeacon-*` request headers.
+> configuration keeps working: the Python package `databeacon`, the `DATABEACON_*` environment
+> variables and the `X-DataBeacon-*` request headers.
 
 Every decision, LLM call, tool call and SQL query is visible in a live **Agent Execution Timeline**.
 

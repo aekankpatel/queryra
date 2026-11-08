@@ -73,7 +73,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <div className="brand"><img src="/beacon.svg" alt="" />DataBeacon</div>
+        <div className="brand"><img src="/beacon.svg" alt="" />Queryra</div>
         <nav className="tabs" aria-label="Sections">
           {TABS.map(([id, label]) => (
             <button key={id} className={`tab ${tab === id ? "active" : ""}`} aria-current={tab === id ? "page" : undefined}
@@ -145,7 +145,7 @@ export default function App() {
             <EvalsView />
           )}
           <footer className="footer small muted">
-            DataBeacon - an autonomous, MCP-powered data analyst by Aekank Patel ·{" "}
+            Queryra - an autonomous, MCP-powered data analyst by Aekank Patel ·{" "}
             <a href={REPO_URL} target="_blank" rel="noreferrer">Source on GitHub</a> ·
             FastAPI, LangGraph, MCP, DuckDB, React · LLM: Cloudflare Workers AI
           </footer>

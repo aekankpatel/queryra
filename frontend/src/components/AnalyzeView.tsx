@@ -397,7 +397,7 @@ function ClarificationCard({ clar, onAnswer }: { clar: Clarification; onAnswer: 
       <h3>Which period did you mean?</h3>
       <p>{clar.question}</p>
       <p className="small muted">
-        DataBeacon stopped before spending any LLM tokens because the period could not be determined reliably from the data.
+        Queryra stopped before spending any LLM tokens because the period could not be determined reliably from the data.
       </p>
       <div className="row">
         {clar.options.map((o) => (

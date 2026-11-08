@@ -19,7 +19,7 @@ export function Welcome({ health, onSample, onReplay }: {
       <div className="card">
         <h1 style={{ margin: "0 0 6px", fontSize: 26, letterSpacing: "-0.02em" }}>Ask your data why.</h1>
         <p style={{ margin: 0, fontSize: 15 }}>
-          DataBeacon is an autonomous data analyst. Upload a dataset, ask a business question in plain English, and watch
+          Queryra is an autonomous data analyst. Upload a dataset, ask a business question in plain English, and watch
           the agent plan, query, test and verify its way to an evidence-backed answer.
         </p>
         <div className="row" style={{ marginTop: 14 }}>

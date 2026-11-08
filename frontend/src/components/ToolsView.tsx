@@ -29,7 +29,7 @@ export function ToolsView() {
       </div>
       {servers.map((s) => (
         <div className="card" key={s}>
-          <h3>databeacon-{s} <span className="badge info">MCP server</span></h3>
+          <h3>queryra-{s} <span className="badge info">MCP server</span></h3>
           {cat.tools.filter((t) => t.server === s).map((t) => (
             <details key={t.name} style={{ padding: "6px 0", borderBottom: "1px dashed var(--border)" }}>
               <summary><span className="mono">{t.name}</span> <span className="small muted">{t.description}</span></summary>

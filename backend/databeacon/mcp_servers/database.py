@@ -14,7 +14,7 @@ from ..sql_guard import execute_readonly
 from .common import default_registry, expected_errors, in_thread, quote_ident
 
 INSTRUCTIONS = (
-    "DataBeacon database server. Every tool takes a dataset_id. Use profile_dataset first to understand the "
+    "Queryra database server. Every tool takes a dataset_id. Use profile_dataset first to understand the "
     "data, then run_sql for read-only DuckDB SELECT queries. Writes, file and network access are blocked."
 )
 
@@ -22,7 +22,7 @@ INSTRUCTIONS = (
 def build_database_server(registry: DatasetRegistry | None = None) -> MCPServer:
     reg = registry or default_registry()
     settings = get_settings()
-    mcp = MCPServer("databeacon-database", instructions=INSTRUCTIONS, version="0.1.0")
+    mcp = MCPServer("queryra-database", instructions=INSTRUCTIONS, version="0.1.0")
 
     def _table_columns(dataset_id: str) -> tuple[str, list[str]]:
         ds = reg.get(dataset_id)

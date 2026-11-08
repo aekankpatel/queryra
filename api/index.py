@@ -1,4 +1,4 @@
-"""Vercel entrypoint: the DataBeacon FastAPI app as a Python function.
+"""Vercel entrypoint: the Queryra FastAPI app as a Python function.
 
 Vercel routes /api/* here (see vercel.json). The backend package lives in backend/.
 """

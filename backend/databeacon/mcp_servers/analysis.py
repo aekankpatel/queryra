@@ -14,7 +14,7 @@ from ..sql_guard import query_df
 from .common import check_date, default_registry, expected_errors, in_thread, quote_ident
 
 INSTRUCTIONS = (
-    "DataBeacon analysis server. Most tools take a read-only SQL query whose result is analysed with "
+    "Queryra analysis server. Most tools take a read-only SQL query whose result is analysed with "
     "pandas/SciPy. period_comparison attributes a change between two periods to dimension values."
 )
 
@@ -22,7 +22,7 @@ INSTRUCTIONS = (
 def build_analysis_server(registry: DatasetRegistry | None = None) -> MCPServer:
     reg = registry or default_registry()
     settings = get_settings()
-    mcp = MCPServer("databeacon-analysis", instructions=INSTRUCTIONS, version="0.1.0")
+    mcp = MCPServer("queryra-analysis", instructions=INSTRUCTIONS, version="0.1.0")
 
     def _df(dataset_id: str, sql: str):
         return query_df(reg.db_path(dataset_id), sql, timeout_s=settings.sql_timeout_s * 2)

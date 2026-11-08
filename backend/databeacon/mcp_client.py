@@ -1,4 +1,4 @@
-"""MCP client: connects to the DataBeacon MCP servers, discovers tools/resources/prompts and executes calls.
+"""MCP client: connects to the Queryra MCP servers, discovers tools/resources/prompts and executes calls.
 
 Servers run in-process by default (zero overhead) or as stdio subprocesses
 (``DATABEACON_MCP_TRANSPORT=stdio``), which is exactly how any third-party MCP

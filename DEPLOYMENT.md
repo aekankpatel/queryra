@@ -1,4 +1,4 @@
-# Deploying DataBeacon
+# Deploying Queryra
 
 Status: **implemented and tested locally, not deployed.** Architecture: Vercel Hobby (frontend +
 Python function) + Cloudflare D1 (shared state) + Cloudflare Workers AI (LLM). Everything here is on

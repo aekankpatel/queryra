@@ -593,7 +593,7 @@ class AnalystAgent:
                      "metric": spec.get("metric_column"), "grouping": ", ".join(spec.get("group_by") or []) or None,
                      "assumptions": spec.get("assumptions") or [], "alignment": al}
             args = {
-                "run_id": state["run_id"], "title": syn.get("title") or "DataBeacon analysis",
+                "run_id": state["run_id"], "title": syn.get("title") or "Queryra analysis",
                 "question": state["question"], "dataset": state.get("dataset_name", state["dataset_id"]),
                 "summary": syn["summary"], "findings": syn["findings"],
                 "charts": [{k: v for k, v in c.items() if k != "figure"} for c in state["charts"]],

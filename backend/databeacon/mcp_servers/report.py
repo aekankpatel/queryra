@@ -15,13 +15,13 @@ from ..reporting.pdf import build_pdf
 from ..sql_guard import query_df
 from .common import default_registry, expected_errors, in_thread
 
-INSTRUCTIONS = "DataBeacon report server: create_chart renders evidence-backed charts; generate_pdf_report writes the final report."
+INSTRUCTIONS = "Queryra report server: create_chart renders evidence-backed charts; generate_pdf_report writes the final report."
 
 
 def build_report_server(registry: DatasetRegistry | None = None) -> MCPServer:
     reg = registry or default_registry()
     settings = get_settings()
-    mcp = MCPServer("databeacon-report", instructions=INSTRUCTIONS, version="0.1.0")
+    mcp = MCPServer("queryra-report", instructions=INSTRUCTIONS, version="0.1.0")
 
     @mcp.tool(
         description=(
@@ -71,7 +71,7 @@ def build_report_server(registry: DatasetRegistry | None = None) -> MCPServer:
     def list_reports() -> str:
         return json.dumps(sorted(p.name for p in settings.reports_dir.glob("*.pdf")))
 
-    @mcp.prompt(description="Structure of a DataBeacon report")
+    @mcp.prompt(description="Structure of a Queryra report")
     def report_outline() -> str:
         return ("1. Executive summary answering the question directly. 2. Findings, each with numbers traceable to "
                 "evidence. 3. Visualizations. 4. Limitations (data quality, causality, sample size). 5. Evidence appendix.")

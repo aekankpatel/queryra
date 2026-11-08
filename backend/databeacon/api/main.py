@@ -1,4 +1,4 @@
-"""FastAPI backend for DataBeacon."""
+"""FastAPI backend for Queryra."""
 
 from __future__ import annotations
 
@@ -141,7 +141,7 @@ def create_app(manager: RunManager | None = None) -> FastAPI:
         for t in app.state.runs.tasks.values():
             t.cancel()
 
-    app = FastAPI(title="DataBeacon API", version=__version__, lifespan=lifespan,
+    app = FastAPI(title="Queryra API", version=__version__, lifespan=lifespan,
                   docs_url="/docs" if settings.expose_docs else None,
                   redoc_url="/redoc" if settings.expose_docs else None,
                   openapi_url="/openapi.json" if settings.expose_docs else None)
@@ -427,12 +427,12 @@ def create_app(manager: RunManager | None = None) -> FastAPI:
         if not data:
             raise HTTPException(404, "report not available")
         return Response(data, media_type="application/pdf",
-                        headers={"Content-Disposition": f'attachment; filename="databeacon-report-{run_id}.pdf"'})
+                        headers={"Content-Disposition": f'attachment; filename="queryra-report-{run_id}.pdf"'})
 
     # ---------------------------------------------------------------- replays
     @app.get("/api/replays")
     async def replays() -> list[dict[str, Any]]:
-        """Recorded investigations: explore DataBeacon without using any AI budget."""
+        """Recorded investigations: explore Queryra without using any AI budget."""
         return list_replays()
 
     @app.get("/api/replays/{replay_id}")
@@ -448,7 +448,7 @@ def create_app(manager: RunManager | None = None) -> FastAPI:
         if not data:
             raise HTTPException(404, "report not available")
         return Response(data, media_type="application/pdf",
-                        headers={"Content-Disposition": f'attachment; filename="databeacon-replay-{replay_id}.pdf"'})
+                        headers={"Content-Disposition": f'attachment; filename="queryra-replay-{replay_id}.pdf"'})
 
     # ----------------------------------------------------------------- evals
     @app.get("/api/evals/latest")

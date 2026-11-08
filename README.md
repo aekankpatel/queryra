@@ -1,10 +1,16 @@
-# DataBeacon
+# Queryra
 
 **An autonomous, MCP-powered data analyst.** Upload a dataset, ask a question in plain English
 ("*Why did revenue decline last quarter, and which customer segments contributed most?*"), and
-DataBeacon plans an investigation, discovers its tools over the Model Context Protocol, runs SQL and
+Queryra plans an investigation, discovers its tools over the Model Context Protocol, runs SQL and
 statistical tests, re-plans when the evidence is incomplete, checks every number it reports against
 the actual tool outputs, and hands you a PDF report.
+
+Live demo: **https://queryra.vercel.app**
+
+> Queryra was developed as *DataBeacon*. Internal identifiers keep that name so existing
+> configuration keeps working: the repository, the Python package `databeacon`, the `DATABEACON_*`
+> environment variables and the `X-DataBeacon-*` request headers.
 
 Every decision, LLM call, tool call and SQL query is visible in a live **Agent Execution Timeline**.
 
@@ -155,7 +161,7 @@ with a deterministic offline policy written for the bundled sample dataset.
 6. Your **Account ID** is in the right-hand sidebar of the account overview page, or in the dashboard
    URL (`dash.cloudflare.com/<ACCOUNT_ID>/...`). This is `CLOUDFLARE_ACCOUNT_ID`.
 
-DataBeacon calls Workers AI through its OpenAI-compatible endpoint
+Queryra calls Workers AI through its OpenAI-compatible endpoint
 (`/client/v4/accounts/<id>/ai/v1/chat/completions`) and uses **`@cf/openai/gpt-oss-120b`** by default,
 which supports native tool calling. Override it with `DATABEACON_MODEL`.
 
@@ -163,7 +169,7 @@ which supports native tool calling. Override it with `DATABEACON_MODEL`.
 
 Workers AI's free allocation is **10,000 neurons per day**. Cloudflare documents a reset at 00:00 UTC,
 but we saw the allocation still exhausted after midnight by the previous evening's usage. So by default
-DataBeacon counts usage over a **rolling 24 hours** (`DATABEACON_NEURON_WINDOW=rolling24h`; `utc_day`
+Queryra counts usage over a **rolling 24 hours** (`DATABEACON_NEURON_WINDOW=rolling24h`; `utc_day`
 for calendar days). It keeps a timestamped ledger (`<data dir>/llm_usage.sqlite`) of the neurons
 Cloudflare reports with every response,
 and refuses a Cloudflare call unless its **worst-case cost** (the prompt plus the full output allowance)
@@ -188,7 +194,7 @@ On the same trajectory the current prompts send about 30% fewer input tokens (se
 Lower `DATABEACON_MAX_TOOL_CALLS` or set `DATABEACON_REASONING_EFFORT=low` to fit more.
 
 Workers AI defaults to **256 output tokens** per response. That is too few for a reasoning model:
-the hidden reasoning can use all of it and leave an empty answer. DataBeacon sets
+the hidden reasoning can use all of it and leave an empty answer. Queryra sets
 `DATABEACON_MAX_OUTPUT_TOKENS` (default 4096) on every request.
 
 ### Fallback and other providers
@@ -204,7 +210,7 @@ With a fallback configured, each LLM call tries Cloudflare first. It moves to th
 Cloudflare errors or the neuron budget is spent. The timeline records which provider served each call.
 
 If your deployment sits behind an egress proxy that injects the `Authorization` header, leave the
-token variables empty and set `DATABEACON_INJECTED_AUTH=1`. DataBeacon then sends a placeholder and
+token variables empty and set `DATABEACON_INJECTED_AUTH=1`. Queryra then sends a placeholder and
 never reads a token.
 
 ## How the agent works

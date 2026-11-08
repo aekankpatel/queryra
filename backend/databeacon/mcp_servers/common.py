@@ -1,4 +1,4 @@
-"""Shared helpers for DataBeacon MCP servers."""
+"""Shared helpers for Queryra MCP servers."""
 
 from __future__ import annotations
 

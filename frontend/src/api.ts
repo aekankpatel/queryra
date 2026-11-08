@@ -70,7 +70,7 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     res = await fetch(`${BASE}${path}`, { ...init, headers: headers(init?.headers) });
   } catch {
-    throw new ApiError("Can't reach the DataBeacon API. It may be starting up - try again in a moment.", 0);
+    throw new ApiError("Can't reach the Queryra API. It may be starting up - try again in a moment.", 0);
   }
   if (!res.ok) {
     let detail = res.statusText;
@@ -132,7 +132,7 @@ async function streamRequest(path: string, init: RequestInit, onMessage: (m: Str
     res = await fetch(`${BASE}${path}`, { ...init, headers: headers(init.headers), signal });
   } catch (e) {
     if ((e as Error).name === "AbortError") throw e;
-    throw new ApiError("Can't reach the DataBeacon API. It may be starting up - try again in a moment.", 0);
+    throw new ApiError("Can't reach the Queryra API. It may be starting up - try again in a moment.", 0);
   }
   if (!res.ok) {
     let detail = res.statusText;

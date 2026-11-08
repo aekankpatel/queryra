@@ -1,4 +1,4 @@
-"""Run the DataBeacon agent evaluation suite.
+"""Run the Queryra agent evaluation suite.
 
     python -m evals.run --mode scripted                    # deterministic offline run (CI), incl. calibration
     python -m evals.run --case revenue_decline_attribution --max-neurons 2500   # small live retest
@@ -69,7 +69,7 @@ async def preflight(llm) -> tuple[bool, str]:
 
 
 def _markdown(summary: dict, scores: list[dict], meta: dict) -> str:
-    lines = [f"# DataBeacon evaluation - {meta['timestamp']}", "",
+    lines = [f"# Queryra evaluation - {meta['timestamp']}", "",
              f"Mode: `{meta['mode']}` · Provider: `{meta['provider']}` · Model: `{meta['model']}` · "
              f"Budgets: `{meta.get('budgets')}`", "",
              "A case succeeds only if every check passes: primary conclusion (structured answer), period, metric, "

@@ -173,11 +173,12 @@ def build_pdf(path: Path, report: dict[str, Any]) -> dict[str, Any]:
     st = _styles()
     path.parent.mkdir(parents=True, exist_ok=True)
     doc = SimpleDocTemplate(str(path), pagesize=A4, leftMargin=1.8 * cm, rightMargin=1.8 * cm,
-                            topMargin=1.6 * cm, bottomMargin=1.6 * cm, title=report.get("title", "DataBeacon report"),
-                            author="DataBeacon")
+                            topMargin=1.6 * cm, bottomMargin=1.6 * cm, title=report.get("title", "Queryra report"),
+                            author="Queryra")
     story: list[Any] = []
-    story.append(_p(report.get("title") or "DataBeacon Analysis Report", st["title"]))
-    generated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    story.append(_p(report.get("title") or "Queryra Analysis Report", st["title"]))
+    # re-rendering a recorded report keeps its original timestamp
+    generated = report.get("generated_at") or datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     story.append(_p(f"Dataset: {report.get('dataset', '-')}   ·   Generated: {generated}", st["muted"]))
     story.append(Spacer(1, 8))
     story.append(_p("Question", st["h2"]))
@@ -269,7 +270,7 @@ def build_pdf(path: Path, report: dict[str, Any]) -> dict[str, Any]:
         canvas.saveState()
         canvas.setFont("Helvetica", 7)
         canvas.setFillColor(MUTED)
-        canvas.drawString(1.8 * cm, 1 * cm, "DataBeacon - autonomous data analysis report")
+        canvas.drawString(1.8 * cm, 1 * cm, "Queryra - autonomous data analysis report")
         canvas.drawRightString(A4[0] - 1.8 * cm, 1 * cm, f"Page {_doc.page}")
         canvas.restoreState()
 

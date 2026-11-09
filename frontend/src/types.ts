@@ -241,6 +241,7 @@ export interface Catalog {
 
 export interface Health {
   status: string;
+  storage_error?: string | null;
   version: string;
   llm: { provider: string; model: string; configured: boolean };
   mcp_transport: string;

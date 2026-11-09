@@ -101,6 +101,12 @@ export default function App() {
               <div className="small muted">Free-tier servers sleep when idle; the first request can take up to a minute.</div>
             </div>
           )}
+          {health?.storage_error && (
+            <div className="error-box small" role="alert" style={{ marginBottom: 14 }}>
+              <strong>Data storage is unavailable.</strong> Recorded investigations still work; uploads, samples
+              and analyses are paused until it is fixed. <span className="muted">({health.storage_error})</span>
+            </div>
+          )}
           {offline && !connecting && (
             <div className="error-box small" style={{ marginBottom: 14 }}>
               The analysis server is not reachable right now. Please try again in a few minutes.

@@ -119,21 +119,34 @@ class SQLRequest(BaseModel):
 def create_app(manager: RunManager | None = None) -> FastAPI:
     settings = get_settings()
     setup_tracing()
+    from ..diagnostics import Unavailable, describe
+    from ..storage import open_store
     from ..storage.datasets import make_registry
 
-    registry = manager.registry if manager else make_registry()
     limiter = RateLimiter()  # per-instance flood guard (requests/minute): no shared writes per request
-    from ..storage import open_store
-
-    shared_limiter = SharedRateLimiter(open_store("app"))  # analyses and uploads: shared and atomic
+    storage_error: str | None = None
+    try:
+        registry = manager.registry if manager else make_registry()
+        shared_limiter = SharedRateLimiter(open_store("app"))  # analyses and uploads: shared and atomic
+        run_manager = manager or RunManager(registry, settings)
+    except Exception as exc:  # noqa: BLE001 - keep serving health and recorded investigations
+        storage_error = describe(exc)
+        log.error("storage unavailable, starting in degraded mode: %s", storage_error)
+        registry = Unavailable("Storage", storage_error)
+        shared_limiter = Unavailable("Storage", storage_error)
+        run_manager = Unavailable("Storage", storage_error)
     last_cleanup = {"t": 0.0}
 
     def cleanup(mgr: RunManager | None) -> None:
         """Retention: delete datasets, runs and reports older than DATA_TTL_HOURS."""
-        if settings.data_ttl_hours <= 0:
+        if settings.data_ttl_hours <= 0 or storage_error:
             return
-        n = registry.purge_older_than(settings.data_ttl_hours)
-        ids = mgr.store.purge_older_than(settings.data_ttl_hours) if mgr else []
+        try:
+            n = registry.purge_older_than(settings.data_ttl_hours)
+            ids = mgr.store.purge_older_than(settings.data_ttl_hours) if mgr else []
+        except Exception:  # noqa: BLE001 - retention is best effort; never fail a request over it
+            log.warning("retention cleanup failed", exc_info=True)
+            return
         try:
             from ..budget import NeuronBudget
 
@@ -147,16 +160,18 @@ def create_app(manager: RunManager | None = None) -> FastAPI:
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        app.state.runs = manager or RunManager(registry, settings)
-        cleanup(app.state.runs)
+        app.state.runs = run_manager
+        cleanup(None if storage_error else run_manager)
         yield
-        for t in app.state.runs.tasks.values():
-            t.cancel()
+        if not storage_error:
+            for t in run_manager.tasks.values():
+                t.cancel()
 
     app = FastAPI(title="Queryra API", version=__version__, lifespan=lifespan,
                   docs_url="/docs" if settings.expose_docs else None,
                   redoc_url="/redoc" if settings.expose_docs else None,
                   openapi_url="/openapi.json" if settings.expose_docs else None)
+    app.state.runs = run_manager  # also set here: not every serverless runtime runs the ASGI lifespan
     app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins), allow_credentials=False,
                        allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
                        allow_headers=["Content-Type", SESSION_HEADER, ACCESS_CODE_HEADER],
@@ -204,7 +219,8 @@ def create_app(manager: RunManager | None = None) -> FastAPI:
     # ---------------------------------------------------------------- health
     @app.get("/api/health")
     async def health() -> dict[str, Any]:
-        return {"status": "ok", "version": __version__, "llm": provider_info(),
+        return {"status": "degraded" if storage_error else "ok", "storage_error": storage_error,
+                "version": __version__, "llm": provider_info(),
                 "mcp_transport": settings.mcp_transport, "public_mode": settings.public_mode,
                 "access_code_required": bool(settings.demo_access_code),
                 "replay_only": settings.replay_only, "execution": settings.execution_mode,
@@ -221,8 +237,11 @@ def create_app(manager: RunManager | None = None) -> FastAPI:
         """LLM usage in the guard's window and the Cloudflare free-tier neuron budget."""
         from ..budget import NeuronBudget
 
-        b = NeuronBudget.default()
-        out = b.summary()
+        try:
+            b = NeuronBudget.default()
+            out = b.summary()
+        except Exception as exc:  # noqa: BLE001 - the guard itself fails closed; just say why here
+            raise HTTPException(503, f"AI usage is unavailable right now ({describe(exc)}).") from exc
         out["remaining_neurons"] = round(b.remaining(), 1)
         out["approx_analyses_left"] = int(b.remaining() // 1000)  # ~700-1,000 neurons per analysis measured
         if settings.public_mode:

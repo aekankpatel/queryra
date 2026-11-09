@@ -1,6 +1,6 @@
 {
   "meta": {
-    "timestamp": "2026-11-08T20:18:22+00:00",
+    "timestamp": "2026-11-09T05:56:19+00:00",
     "mode": "scripted",
     "provider": "scripted",
     "model": "scripted",
@@ -26,8 +26,8 @@
     "sql_validity": 0.584,
     "tool_selection_f1": 1.0,
     "hallucination_rate": 0.0,
-    "avg_latency_s": 1.14,
-    "avg_total_tokens": 25749.5,
+    "avg_latency_s": 1.215,
+    "avg_total_tokens": 25753.0,
     "avg_tool_calls": 8.5,
     "error_recovery_rate": 1.0,
     "scorer_calibration": 1.0,
@@ -85,7 +85,7 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 1.45,
+      "latency_s": 1.63,
       "total_tokens": 20269,
       "tokens_by_stage": {
         "plan": {
@@ -190,8 +190,8 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.63,
-      "total_tokens": 29431,
+      "latency_s": 0.73,
+      "total_tokens": 29425,
       "tokens_by_stage": {
         "plan": {
           "calls": 1,
@@ -200,7 +200,7 @@
         },
         "act": {
           "calls": 12,
-          "input_tokens": 18632,
+          "input_tokens": 18627,
           "output_tokens": 264
         },
         "reflect": {
@@ -210,7 +210,7 @@
         },
         "synthesize": {
           "calls": 2,
-          "input_tokens": 3925,
+          "input_tokens": 3924,
           "output_tokens": 860
         }
       },
@@ -294,8 +294,8 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.81,
-      "total_tokens": 29709,
+      "latency_s": 0.94,
+      "total_tokens": 29715,
       "tokens_by_stage": {
         "plan": {
           "calls": 1,
@@ -304,7 +304,7 @@
         },
         "act": {
           "calls": 12,
-          "input_tokens": 18741,
+          "input_tokens": 18746,
           "output_tokens": 264
         },
         "reflect": {
@@ -314,7 +314,7 @@
         },
         "synthesize": {
           "calls": 2,
-          "input_tokens": 4040,
+          "input_tokens": 4041,
           "output_tokens": 873
         }
       },
@@ -396,8 +396,8 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.83,
-      "total_tokens": 31230,
+      "latency_s": 0.8,
+      "total_tokens": 31237,
       "tokens_by_stage": {
         "plan": {
           "calls": 1,
@@ -406,17 +406,17 @@
         },
         "act": {
           "calls": 12,
-          "input_tokens": 19376,
+          "input_tokens": 19381,
           "output_tokens": 264
         },
         "reflect": {
           "calls": 3,
-          "input_tokens": 4914,
+          "input_tokens": 4915,
           "output_tokens": 201
         },
         "synthesize": {
           "calls": 2,
-          "input_tokens": 4479,
+          "input_tokens": 4480,
           "output_tokens": 867
         }
       },

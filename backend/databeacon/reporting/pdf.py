@@ -24,7 +24,7 @@ from .charts import PALETTE
 PAL = [colors.HexColor(c) for c in PALETTE]
 INK = colors.HexColor("#0f172a")
 MUTED = colors.HexColor("#64748b")
-ACCENT = colors.HexColor("#1f5fbf")
+ACCENT = colors.HexColor("#b44d6c")
 
 
 def _styles():

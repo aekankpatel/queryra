@@ -10,7 +10,7 @@ import pandas as pd
 import plotly.express as px
 
 CHART_TYPES = {"bar", "line", "area", "scatter", "pie", "histogram", "box"}
-PALETTE = ["#1f5fbf", "#d9822b", "#2f8a57", "#7a5bb8", "#c4403a", "#2b8c8c", "#b8962e", "#77746e"]
+PALETTE = ["#b44d6c", "#6f9a7e", "#d9a35c", "#5f6b8a", "#c97a5a", "#8a6f9e", "#4f8c8f", "#9a8f88"]
 
 
 def build_chart(df: pd.DataFrame, chart_type: str, x: str, y: str | list[str] | None = None, color: str | None = None,

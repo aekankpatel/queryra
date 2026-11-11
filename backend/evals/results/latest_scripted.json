@@ -1,6 +1,6 @@
 {
   "meta": {
-    "timestamp": "2026-11-11T20:37:31+00:00",
+    "timestamp": "2026-11-11T20:50:23+00:00",
     "mode": "scripted",
     "provider": "scripted",
     "model": "scripted",
@@ -26,8 +26,8 @@
     "sql_validity": 0.584,
     "tool_selection_f1": 1.0,
     "hallucination_rate": 0.0,
-    "avg_latency_s": 1.165,
-    "avg_total_tokens": 25753.0,
+    "avg_latency_s": 1.12,
+    "avg_total_tokens": 25751.0,
     "avg_tool_calls": 8.5,
     "error_recovery_rate": 1.0,
     "scorer_calibration": 1.0,
@@ -85,8 +85,8 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 1.57,
-      "total_tokens": 20269,
+      "latency_s": 1.44,
+      "total_tokens": 20265,
       "tokens_by_stage": {
         "plan": {
           "calls": 1,
@@ -95,7 +95,7 @@
         },
         "act": {
           "calls": 8,
-          "input_tokens": 11025,
+          "input_tokens": 11023,
           "output_tokens": 172
         },
         "reflect": {
@@ -105,7 +105,7 @@
         },
         "synthesize": {
           "calls": 2,
-          "input_tokens": 4018,
+          "input_tokens": 4016,
           "output_tokens": 875
         }
       },
@@ -190,7 +190,7 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.65,
+      "latency_s": 0.64,
       "total_tokens": 29425,
       "tokens_by_stage": {
         "plan": {
@@ -294,8 +294,8 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.84,
-      "total_tokens": 29709,
+      "latency_s": 0.83,
+      "total_tokens": 29715,
       "tokens_by_stage": {
         "plan": {
           "calls": 1,
@@ -304,7 +304,7 @@
         },
         "act": {
           "calls": 12,
-          "input_tokens": 18741,
+          "input_tokens": 18746,
           "output_tokens": 264
         },
         "reflect": {
@@ -314,7 +314,7 @@
         },
         "synthesize": {
           "calls": 2,
-          "input_tokens": 4040,
+          "input_tokens": 4041,
           "output_tokens": 873
         }
       },
@@ -396,7 +396,7 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.76,
+      "latency_s": 0.8,
       "total_tokens": 31237,
       "tokens_by_stage": {
         "plan": {

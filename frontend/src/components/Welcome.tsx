@@ -21,7 +21,7 @@ export function Welcome({ health, onSample, onReplay }: {
   const canLoad = !busy && !!health && !health.storage_error;
   return (
     <div className="welcome">
-      <h1>Ask your data a question</h1>
+      <h1>Ask your data a <span className="mark">question</span></h1>
       <p>
         Upload a spreadsheet and ask something in plain English, like “why did sales drop last quarter?”.
         Queryra works it out step by step. You can see every query it runs, and every number in the answer is

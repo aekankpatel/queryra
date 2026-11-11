@@ -173,7 +173,8 @@ billing beyond the allocation. Leave `DATABEACON_ALLOW_PAID_INFERENCE` unset.
    | `DATABEACON_CORS_ORIGINS` | `https://<project>.vercel.app` |
    | `DATABEACON_MAX_ITERATIONS` | `2` |
    | `DATABEACON_MAX_STEPS_PER_ITERATION` | `6` |
-   | optional `DATABEACON_DEMO_ACCESS_CODE` | a shared code for live analyses |
+   | optional `DATABEACON_DEMO_ACCESS_CODE` | a shared code for live analyses (only used with the next line) |
+   | optional `DATABEACON_REQUIRE_ACCESS_CODE` | `1` to require that code; unset = open to everyone |
    | optional `DATABEACON_REPLAY_ONLY` | `1` for recorded investigations only |
    | optional `DATABEACON_D1_API_TOKEN` | separate D1 token |
    | optional `DATABEACON_FALLBACK_PROVIDER` / `GROQ_API_KEY` | Groq fallback |

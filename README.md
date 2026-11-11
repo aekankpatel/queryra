@@ -49,12 +49,15 @@ The live demo has two pages:
 
 - **Ask**: pick a dataset (upload a file or click one of the samples in the sidebar), type a question
   in plain English and get an answer with charts, the list of steps the agent took, and a PDF report.
-  Asking your own questions needs an access code ([ask for one](https://aekankpatel.com/contact)).
+  Anyone can ask; each visitor gets 3 questions an hour and 8 a day, within a shared free daily AI
+  allowance. (An access code can be required by setting `DATABEACON_REQUIRE_ACCESS_CODE=1` together
+  with `DATABEACON_DEMO_ACCESS_CODE`.)
 - **Data**: the loaded dataset's columns, types, missing values and sample rows, and a box for running
   your own read-only SQL.
 
 Four **examples** (real questions answered earlier) are listed on the home page. Anyone can replay
-them step by step and download their PDFs; they need no access code and use no AI. The tools the
+them step by step and download their PDFs; they use no AI, so they keep working when the day's
+allowance is used up. The tools the
 agent can call are described in [MCP servers](#mcp-servers), and how answers are tested in
 [Evaluation framework](#evaluation-framework) and [Benchmark results](#benchmark-results).
 

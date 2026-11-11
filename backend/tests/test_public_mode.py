@@ -100,7 +100,7 @@ def test_dataset_quota_size_and_row_caps(registry, monkeypatch):
 
 
 def test_analysis_rate_limit_and_access_code(registry, monkeypatch):
-    with public_client(registry, monkeypatch, RUNS_PER_HOUR=1, DEMO_ACCESS_CODE="letmein") as c:
+    with public_client(registry, monkeypatch, RUNS_PER_HOUR=1, DEMO_ACCESS_CODE="letmein", REQUIRE_ACCESS_CODE="1") as c:
         ds = c.post("/api/datasets/sample", headers=A).json()
         body = {"dataset_id": ds["id"], "question": "Why did revenue decline last quarter?"}
         assert c.post("/api/runs", headers=A, json=body).status_code == 403
@@ -111,6 +111,20 @@ def test_analysis_rate_limit_and_access_code(registry, monkeypatch):
         limited = c.post("/api/runs", headers={**A, "X-DataBeacon-Access-Code": "letmein"}, json=body)
         assert limited.status_code == 429 and int(limited.headers["Retry-After"]) > 0
         assert c.get("/api/health").json()["access_code_required"] is True
+
+
+def test_saved_access_code_is_ignored_unless_required(registry, monkeypatch):
+    """The demo is open to everyone unless REQUIRE_ACCESS_CODE=1, even with DEMO_ACCESS_CODE still set;
+    the per-visitor rate limits still apply."""
+    monkeypatch.delenv("DATABEACON_REQUIRE_ACCESS_CODE", raising=False)
+    with public_client(registry, monkeypatch, RUNS_PER_HOUR=1, DEMO_ACCESS_CODE="letmein") as c:
+        assert c.get("/api/health").json()["access_code_required"] is False
+        ds = c.post("/api/datasets/sample", headers=A).json()
+        body = {"dataset_id": ds["id"], "question": "Why did revenue decline last quarter?"}
+        ok = c.post("/api/runs", headers=A, json=body)  # no code sent
+        assert ok.status_code == 202
+        _wait(c, ok.json()["run_id"], A)
+        assert c.post("/api/runs", headers=A, json=body).status_code == 429  # rate limit still on
 
 
 def test_failed_runs_do_not_leak_tracebacks(registry, monkeypatch):

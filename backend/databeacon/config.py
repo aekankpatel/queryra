@@ -59,7 +59,10 @@ class Settings:
     # trust X-Forwarded-For (only behind a proxy you control, e.g. Vercel / a reverse proxy)
     trust_proxy: bool = field(default_factory=lambda: _env("TRUST_PROXY", "0").lower() in {"1", "true", "yes"})
     # optional shared code required to start live (LLM-spending) analyses
-    demo_access_code: str = field(default_factory=lambda: _env("DEMO_ACCESS_CODE", ""))
+    # The access code is only enforced when REQUIRE_ACCESS_CODE=1, so a saved DEMO_ACCESS_CODE can stay in
+    # the environment while the demo is open to everyone.
+    demo_access_code: str = field(default_factory=lambda: _env("DEMO_ACCESS_CODE", "") if _env(
+        "REQUIRE_ACCESS_CODE", "0").lower() in {"1", "true", "yes"} else "")
     # Run execution: "background" (long-lived server) or "inline" (serverless: the run lives inside the
     # request that started it). Defaults to inline on Vercel.
     execution_mode: str = field(default_factory=lambda: _env(

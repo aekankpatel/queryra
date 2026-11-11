@@ -8,6 +8,7 @@ import type {
 import { EvidenceDrawer } from "./EvidenceDrawer";
 import { Findings, VerificationBadge } from "./Findings";
 import { PlotlyChart } from "./PlotlyChart";
+import { CONTACT_URL } from "../links";
 import { SampleSource } from "./SampleSource";
 import { Timeline } from "./Timeline";
 
@@ -200,7 +201,7 @@ export function AnalyzeView({ dataset }: { dataset: Dataset }) {
           {sample?.source && <div style={{ margin: "-6px 0 8px" }}><SampleSource sample={sample} /></div>}
           <textarea
             value={question}
-            placeholder="e.g. Why did revenue decline last quarter, and which segments contributed most?"
+            placeholder="e.g. Why did sales drop last quarter?"
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) start();
@@ -213,15 +214,23 @@ export function AnalyzeView({ dataset }: { dataset: Dataset }) {
               ))}
             </div>
             <button className="btn primary" onClick={() => start()} disabled={running || question.trim().length < 5}>
-              {running ? "Investigating…" : "Run analysis"}
+              {running ? "Working…" : "Get answer"}
             </button>
           </div>
-          {error && <div className="error-box small" style={{ marginTop: 8 }}>{error}</div>}
+          {error && (
+            <div className="error-box small" style={{ marginTop: 8 }}>
+              {error}
+              {/access code/i.test(error) && (
+                <> Enter it in the box at the top of the page.{" "}
+                  Don't have one? <a href={CONTACT_URL} target="_blank" rel="noreferrer">Contact me</a>.</>
+              )}
+            </div>
+          )}
         </div>
 
         {!runId && history.length > 0 && (
           <div className="card">
-            <h3>Previous analyses</h3>
+            <h3>Earlier questions</h3>
             {history.map((h) => (
               <div key={h.id} className="row" style={{ justifyContent: "space-between", padding: "4px 0" }}>
                 <a href="#" onClick={(e) => { e.preventDefault(); openRun(h.id); }}>{h.question}</a>
@@ -243,24 +252,24 @@ export function AnalyzeView({ dataset }: { dataset: Dataset }) {
                 </span>
                 {result?.report?.ok && (
                   <a className="btn primary small" href={api.reportUrl(run.id)} target="_blank" rel="noreferrer">
-                    Download PDF report
+                    Download PDF
                   </a>
                 )}
-                {!running && <button className="btn small" onClick={() => { setRunId(null); setRun(null); }}>New</button>}
+                {!running && <button className="btn small" onClick={() => { setRunId(null); setRun(null); }}>New question</button>}
               </div>
             </div>
             {metrics && !running && (
               <div className="metrics" style={{ marginTop: 12 }}>
-                <Metric label="Latency" value={`${metrics.latency_s}s`} />
-                <Metric label="Iterations" value={result?.iterations ?? "–"} />
+                <Metric label="Time" value={`${Math.round(metrics.latency_s)} s`} />
+                <Metric label="Rounds" value={result?.iterations ?? "–"} />
                 <Metric label="Tool calls" value={metrics.tool_calls} />
                 <Metric label="SQL queries" value={metrics.sql_queries} />
                 <Metric label="Tokens" value={fmtNum(metrics.total_tokens)} />
-                <Metric label="Verified claims" value={ver ? `${ver.numeric_claims_supported}/${ver.numeric_claims}` : "–"} />
-                <Metric label="Hallucination" value={ver ? `${(ver.hallucination_rate * 100).toFixed(1)}%` : "–"} />
+                <Metric label="Numbers checked" value={ver ? `${ver.numeric_claims_supported}/${ver.numeric_claims}` : "–"} />
+                <Metric label="Unsupported" value={ver ? `${(ver.hallucination_rate * 100).toFixed(1)}%` : "–"} />
               </div>
             )}
-            {running && <p className="muted">The agent is planning, querying and testing hypotheses. Follow along in the timeline →</p>}
+            {running && <p className="muted">Working on it. You can follow each step on the right.</p>}
             {result?.errors?.length && !running && !syn ? (
               <div className="error-box small" style={{ marginTop: 10 }}>{result.errors.join(" · ")}</div>
             ) : null}
@@ -282,17 +291,17 @@ export function AnalyzeView({ dataset }: { dataset: Dataset }) {
               <VerificationBadge v={syn.summary_verification} />
             </div>
             <p className="summary">{syn.summary}</p>
-            <h3>Findings</h3>
+            <h3>What it found</h3>
             <Findings findings={syn.findings} onEvidence={showEvidence} />
             {!!syn.recommendations?.length && (
               <>
-                <h3 style={{ marginTop: 14 }}>Recommendations</h3>
+                <h3 style={{ marginTop: 14 }}>Suggestions</h3>
                 <ul>{syn.recommendations.map((r, i) => <li key={i}>{r}</li>)}</ul>
               </>
             )}
             {!!syn.limitations?.length && (
               <>
-                <h3>Limitations</h3>
+                <h3>Keep in mind</h3>
                 <ul className="muted">{syn.limitations.map((r, i) => <li key={i}>{r}</li>)}</ul>
               </>
             )}
@@ -301,14 +310,14 @@ export function AnalyzeView({ dataset }: { dataset: Dataset }) {
 
         {live.charts.length > 0 && (
           <div className="card">
-            <h3>Visualizations</h3>
+            <h3>Charts</h3>
             <div className="charts">
               {live.charts.map((c) => (
                 <div key={c.chart_id}>
                   <PlotlyChart chart={c} />
                   {c.origin === "fallback" && (
-                    <div className="small"><span className="badge purple">auto fallback</span>{" "}
-                      <span className="muted">The agent created no chart; this one was generated from its last tabular result.</span></div>
+                    <div className="small"><span className="badge purple">added automatically</span>{" "}
+                      <span className="muted">No chart was drawn, so this one was made from the last table.</span></div>
                   )}
                   {c.evidence_id && (
                     <div className="small muted">Source: <span className="ev-chip" onClick={() => showEvidence(c.evidence_id!)}>{c.evidence_id}</span></div>
@@ -321,8 +330,8 @@ export function AnalyzeView({ dataset }: { dataset: Dataset }) {
 
         {live.plan && (
           <div className="card">
-            <h3>Investigation plan</h3>
-            <p className="small"><strong>Objective:</strong> {live.plan.objective}</p>
+            <h3>Plan</h3>
+            <p className="small"><strong>Goal:</strong> {live.plan.objective}</p>
             {live.plan.time_scope && <p className="small muted">Time scope: {live.plan.time_scope}</p>}
             {live.plan.hypotheses.map((h) => {
               const latest = [...live.reflections].reverse().find((r) => r.hypothesis_status?.[h.id]);
@@ -373,12 +382,12 @@ export function AnalyzeView({ dataset }: { dataset: Dataset }) {
       </div>
 
       <div className="card" style={{ position: "sticky", top: 0 }}>
-        <h3>Agent execution timeline</h3>
+        <h3>Steps</h3>
         <div className="row small muted" style={{ marginBottom: 8 }}>
-          <Legend color="var(--accent)" label="node" />
-          <Legend color="var(--purple)" label="LLM" />
+          <Legend color="var(--accent)" label="step" />
+          <Legend color="var(--purple)" label="AI" />
           <Legend color="var(--ok)" label="tool" />
-          <Legend color="var(--warn)" label="decision" />
+          <Legend color="var(--warn)" label="choice" />
           <Legend color="var(--err)" label="error" />
         </div>
         <Timeline events={live.events} onEvidence={showEvidence} />
@@ -413,7 +422,7 @@ function ClarificationCard({ clar, onAnswer }: { clar: Clarification; onAnswer: 
       <h3>Which period did you mean?</h3>
       <p>{clar.question}</p>
       <p className="small muted">
-        Queryra stopped before spending any LLM tokens because the period could not be determined reliably from the data.
+        Queryra stopped before using any AI time, because it couldn't tell which period you meant.
       </p>
       <div className="row">
         {clar.options.map((o) => (
@@ -438,7 +447,7 @@ export function ScopeCard({ spec, alignment }: { spec?: TaskSpec | null; alignme
   return (
     <div className="card">
       <div className="row" style={{ justifyContent: "space-between" }}>
-        <h3 style={{ margin: 0 }}>Scope &amp; task alignment</h3>
+        <h3 style={{ margin: 0 }}>What was checked</h3>
         {alignment && (
           <span className={`badge ${alignment.status === "aligned" ? "ok" : "err"}`}>
             {alignment.status === "aligned" ? "answers the question asked" : "does not match the question"}
@@ -455,7 +464,7 @@ export function ScopeCard({ spec, alignment }: { spec?: TaskSpec | null; alignme
           )}
           {spec.metric_column && <div><strong>Metric:</strong> {spec.aggregation || "sum"}({spec.metric_column})</div>}
           {spec.group_by.length > 0 && <div><strong>Grouping:</strong> {spec.group_by.join(", ")}</div>}
-          {spec.answer_target && <div><strong>Answer target:</strong> {spec.answer_target}</div>}
+          {spec.answer_target && <div><strong>Looking for:</strong> {spec.answer_target}</div>}
           {spec.assumptions.length > 0 && (
             <ul className="muted" style={{ margin: "6px 0 0", paddingLeft: 18 }}>
               {spec.assumptions.map((a, i) => <li key={i}>{a}</li>)}
@@ -483,8 +492,8 @@ function ConnectionBanner({ mode, run, onRerun }: { mode: "reconnected" | "inter
   if (mode === "reconnected") {
     return (
       <div className="card small" role="status" style={{ borderColor: "var(--accent)" }}>
-        <strong>Reconnected to saved progress.</strong> The investigation is still running on the server; you are
-        seeing what it has saved so far, and new steps appear as they are saved.
+        <strong>Reconnected to saved progress.</strong> It's still working on this. You're seeing what's done so
+        far, and new steps will appear as they finish.
       </div>
     );
   }
@@ -492,8 +501,7 @@ function ConnectionBanner({ mode, run, onRerun }: { mode: "reconnected" | "inter
     <div className="card small" role="alert" style={{ borderColor: "var(--warn)" }}>
       <strong>This investigation was interrupted.</strong>{" "}
       {capitalize(run.interruption?.reason ?? "the server stopped working on it before it finished")}.{" "}
-      Everything saved up to that point is shown below. An investigation can't continue from where it stopped:
-      starting it again runs a new, complete investigation.
+      What was done before that is shown below. It can't pick up where it left off, but you can start it again.
       <div className="row" style={{ marginTop: 8 }}>
         <button className="btn primary small" onClick={onRerun}>Start it again</button>
       </div>

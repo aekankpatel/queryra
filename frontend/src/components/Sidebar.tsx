@@ -62,7 +62,7 @@ export function Sidebar({ datasets, selected, onSelect, onChanged, maxUploadMb }
 
   return (
     <aside className="sidebar">
-      <div className="section-title">Datasets</div>
+      <div className="section-title">Your data</div>
       <div
         className={`dropzone ${over ? "over" : ""}`}
         onClick={() => input.current?.click()}
@@ -80,7 +80,7 @@ export function Sidebar({ datasets, selected, onSelect, onChanged, maxUploadMb }
       >
         {busy ? "Loading…" : (
           <>
-            <strong>Upload a dataset</strong>
+            <strong>Upload a file</strong>
             <div className="small">CSV, TSV, Parquet, JSON or XLSX{maxUploadMb ? ` · max ${maxUploadMb} MB` : ""}</div>
           </>
         )}
@@ -96,7 +96,7 @@ export function Sidebar({ datasets, selected, onSelect, onChanged, maxUploadMb }
           }}
         />
       </div>
-      <div className="section-title" style={{ marginTop: 4 }}>Sample datasets</div>
+      <div className="section-title" style={{ marginTop: 4 }}>Samples</div>
       <div className="row" style={{ gap: 6 }}>
         <select className="sample-select" style={{ flex: 1, minWidth: 0 }} value={pick} aria-label="Sample dataset"
                 onChange={(e) => setPick(e.target.value)} disabled={busy}>
@@ -113,14 +113,14 @@ export function Sidebar({ datasets, selected, onSelect, onChanged, maxUploadMb }
         </div>
       )}
       {error && <div className="error-box small">{error}</div>}
-      {datasets.length === 0 && <div className="muted small">No datasets yet.</div>}
+      {datasets.length === 0 && <div className="muted small">Nothing here yet.</div>}
       {datasets.map((d) => (
         <div key={d.id} className={`dataset ${selected === d.id ? "active" : ""}`} onClick={() => onSelect(d.id)}>
           <div className="row" style={{ justifyContent: "space-between" }}>
             <span className="name">{d.name}</span>
             <button
               className="btn ghost small"
-              title="Delete dataset"
+              title="Remove"
               onClick={(e) => {
                 e.stopPropagation();
                 remove(d.id);

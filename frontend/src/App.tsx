@@ -7,11 +7,12 @@ import { Sidebar } from "./components/Sidebar";
 import { ToolsView } from "./components/ToolsView";
 import { ReplayList, ReplayView } from "./components/ReplayView";
 import { Welcome } from "./components/Welcome";
+import { CONTACT_URL } from "./links";
 import type { Dataset, Health } from "./types";
 
 type Tab = "analyze" | "replays" | "data" | "tools" | "evals";
-const TABS: [Tab, string][] = [["analyze", "Analyze"], ["replays", "Recorded"], ["data", "Data"], ["tools", "MCP Tools"],
-  ["evals", "Evaluation"]];
+const TABS: [Tab, string][] = [["analyze", "Ask"], ["replays", "Examples"], ["data", "Data"], ["tools", "Tools"],
+  ["evals", "Tests"]];
 const REPO_URL = import.meta.env.VITE_REPO_URL ?? "https://github.com/aekankpatel/queryra";
 
 export default function App() {
@@ -81,15 +82,12 @@ export default function App() {
           ))}
         </nav>
         <div className="spacer" />
-        {health && (
-          <span className={`badge ${health.llm.configured ? "ok" : "warn"}`} title={health.llm.configured ? "LLM configured" : "LLM credentials missing"}>
-            {health.llm.provider} · {health.llm.model}
+        {left !== null && health?.public_mode && !health.replay_only && (
+          <span className="small muted" title="Everyone shares a small free allowance each day">
+            {left > 0 ? `About ${left} questions left today` : "No questions left today"}
           </span>
         )}
-        {left !== null && health?.public_mode && (
-          <span className="badge muted" title="Shared free AI budget for today">~{left} analyses left today</span>
-        )}
-        {offline && <span className="badge err">API offline</span>}
+        {offline && <span className="badge err">Offline</span>}
       </header>
       <div className="layout">
         <Sidebar datasets={datasets} selected={selected} onSelect={setSelected} onChanged={refresh}
@@ -97,31 +95,30 @@ export default function App() {
         <main className="main">
           {connecting && (
             <div className="card" role="status" style={{ marginBottom: 14 }}>
-              <strong>Connecting to the analysis server…</strong>
-              <div className="small muted">Free-tier servers sleep when idle; the first request can take up to a minute.</div>
+              <strong>Waking up the server…</strong>
+              <div className="small muted">It sleeps when nobody is using it, so the first visit can take up to a minute.</div>
             </div>
           )}
           {health?.storage_error && (
             <div className="error-box small" role="alert" style={{ marginBottom: 14 }}>
-              <strong>Data storage is unavailable.</strong> Recorded investigations still work; uploads, samples
-              and analyses are paused until it is fixed. <span className="muted">({health.storage_error})</span>
+              <strong>Saving data isn't working right now.</strong> The examples still work. Uploads and questions
+              are paused until it's fixed. <span className="muted">({health.storage_error})</span>
             </div>
           )}
           {offline && !connecting && (
             <div className="error-box small" style={{ marginBottom: 14 }}>
-              The analysis server is not reachable right now. Please try again in a few minutes.
+              Can't reach the server right now. Please try again in a few minutes.
             </div>
           )}
           {health?.public_mode && <DemoNotice health={health} />}
           {health && !health.llm.configured && tab === "analyze" && (
             <div className="error-box small" style={{ marginBottom: 14, background: "var(--warn-soft)", color: "var(--warn)" }}>
-              No LLM credentials found for provider “{health.llm.provider}”. Set CLOUDFLARE_ACCOUNT_ID (and
-              CLOUDFLARE_API_TOKEN) or GROQ_API_KEY in the backend environment and restart.
+              The AI isn't set up on this server yet (no key for “{health.llm.provider}”). The examples still work.
             </div>
           )}
           {health?.replay_only && tab === "analyze" && (
             <div className="card small" style={{ marginBottom: 14 }}>
-              Live AI analyses are switched off on this deployment. Explore the recorded investigations below.
+              Live questions are turned off for now. You can still watch the examples below.
             </div>
           )}
           {tab === "replays" ? (
@@ -129,8 +126,8 @@ export default function App() {
               : (
                 <div className="stack">
                   <div className="card small">
-                    Real investigations recorded with Cloudflare Workers AI. Watching them uses no AI budget, so they
-                    are always available, even when today's free AI allowance is used up.
+                    These are real questions answered earlier and saved. You can replay them step by step at any
+                    time, and they don't count towards the daily limit.
                   </div>
                   <ReplayList onOpen={openReplay} />
                 </div>
@@ -151,9 +148,10 @@ export default function App() {
             <EvalsView />
           )}
           <footer className="footer small muted">
-            Queryra - an autonomous, MCP-powered data analyst by Aekank Patel ·{" "}
-            <a href={REPO_URL} target="_blank" rel="noreferrer">Source on GitHub</a> ·
-            FastAPI, LangGraph, MCP, DuckDB, React · LLM: Cloudflare Workers AI
+            Queryra, made by Aekank Patel ·{" "}
+            <a href={REPO_URL} target="_blank" rel="noreferrer">Code on GitHub</a> ·{" "}
+            <a href={CONTACT_URL} target="_blank" rel="noreferrer">Contact</a>
+            {health?.llm.configured && <> · AI by {health.llm.provider === "cloudflare" ? "Cloudflare" : health.llm.provider}</>}
           </footer>
         </main>
       </div>
@@ -166,21 +164,23 @@ function DemoNotice({ health }: { health: Health }) {
   const [saved, setSaved] = useState(Boolean(accessCode()));
   const l = health.limits;
   return (
-    <div className="card small" style={{ marginBottom: 14 }}>
-      <strong>Public demo.</strong>{" "}
+    <div className="notice small" style={{ marginBottom: 14 }}>
+      <strong>This is a free demo.</strong>{" "}
       {l && <>
-        Uploads up to {l.max_upload_mb} MB and {l.max_rows.toLocaleString()} rows; {l.max_datasets_per_session} datasets per visitor;
-        {l.runs_per_hour > 0 && <> {l.runs_per_hour} analyses per hour</>}{l.runs_per_day > 0 && <>, {l.runs_per_day} per day</>}.
-        {l.data_ttl_hours > 0 && <> Your datasets and results are visible only to this browser and are deleted after {l.data_ttl_hours} hours.</>}
+        Files up to {l.max_upload_mb} MB. Only you can see your data, and it's deleted after{" "}
+        {l.data_ttl_hours > 0 ? `${l.data_ttl_hours} hours` : "a while"}.
       </>}{" "}
-      Please don't upload personal or confidential data.
-      {health.access_code_required && (
-        <div className="row" style={{ marginTop: 8 }}>
-          <label htmlFor="code">Access code for live AI analyses:</label>
-          <input id="code" type="password" value={code} onChange={(e) => { setCode(e.target.value); setSaved(false); }}
-            style={{ padding: "5px 8px", border: "1px solid var(--border)", borderRadius: 6, background: "var(--panel-2)" }} />
+      Please don't upload anything private.
+      {health.access_code_required && !health.replay_only && (
+        <div className="row code-row" style={{ marginTop: 8 }}>
+          <label htmlFor="code">Asking your own questions needs an access code:</label>
+          <input id="code" type="password" value={code} placeholder="Access code" autoComplete="off"
+            onChange={(e) => { setCode(e.target.value); setSaved(false); }} />
           <button className="btn small" onClick={() => { setAccessCode(code.trim()); setSaved(true); }}>Save</button>
-          {saved && code && <span className="badge ok">saved for this tab</span>}
+          {saved && code && <span className="badge ok">Saved</span>}
+          <span className="muted">
+            Don't have one? <a href={CONTACT_URL} target="_blank" rel="noreferrer">Contact me</a>.
+          </span>
         </div>
       )}
     </div>

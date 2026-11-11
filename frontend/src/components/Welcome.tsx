@@ -4,10 +4,10 @@ import type { Health, SampleDataset } from "../types";
 import { ReplayList } from "./ReplayView";
 
 const STEPS = [
-  ["Understand", "Profiles your data: column roles, missing values, outliers, correlations."],
-  ["Investigate", "Plans hypotheses, discovers tools over MCP and runs read-only SQL and statistical tests."],
-  ["Verify", "Checks every number against tool outputs, and the answer against the question's period, metric and grouping."],
-  ["Report", "Interactive charts, a full execution timeline and a downloadable PDF."],
+  ["Pick some data", "Upload a spreadsheet or use one of the samples."],
+  ["Ask a question", "In plain words, like “Why did sales drop last quarter?”"],
+  ["See how it works it out", "Every query and calculation shows up as it happens."],
+  ["Get an answer you can check", "Each number is checked against the data. Charts and a PDF are included."],
 ];
 
 export function Welcome({ health, onSample, onReplay }: {
@@ -30,29 +30,29 @@ export function Welcome({ health, onSample, onReplay }: {
       setBusy(false);
     }
   }
+  const canLoad = !busy && !!health && !health.storage_error;
   return (
     <div className="stack" style={{ maxWidth: 860 }}>
-      <div className="card">
-        <h1 style={{ margin: "0 0 6px", fontSize: 26, letterSpacing: "-0.02em" }}>Ask your data why.</h1>
-        <p style={{ margin: 0, fontSize: 15 }}>
-          Queryra is an autonomous data analyst. Upload a dataset, ask a business question in plain English, and watch
-          the agent plan, query, test and verify its way to an evidence-backed answer.
+      <div className="card hero">
+        <h1>Ask your data a question.</h1>
+        <p>
+          Queryra looks through your data the way an analyst would. It runs the numbers, checks its own work and
+          gives you a short answer with charts.
         </p>
-        <div className="row" style={{ marginTop: 14 }}>
-          <button className="btn primary" disabled={busy || !health || health.replay_only} onClick={() => load()}>
-            {busy ? "Loading sample…" : "Try it with sample e-commerce data"}
+        <div className="row" style={{ marginTop: 16 }}>
+          <button className="btn primary" disabled={!canLoad} onClick={() => load()}>
+            {busy ? "Loading…" : "Try it with sample shop data"}
           </button>
           <span className="small muted">
-            or upload a CSV, TSV, Parquet, JSON or XLSX file from the sidebar
-            {health?.limits ? ` (up to ${health.limits.max_upload_mb} MB)` : ""}.
+            or upload your own file on the left{health?.limits ? ` (up to ${health.limits.max_upload_mb} MB)` : ""}.
           </span>
         </div>
         {samples.length > 1 && (
-          <div className="row" style={{ marginTop: 10, flexWrap: "wrap", gap: 6 }}>
-            <span className="small muted">More sample datasets:</span>
+          <div className="row" style={{ marginTop: 10, gap: 6 }}>
+            <span className="small muted">Other samples:</span>
             {samples.filter((x) => x.id !== "ecommerce").map((x) => (
-              <button key={x.id} className="btn small" title={`${x.description ?? ""} Source: ${x.source ?? "-"} (${x.license ?? "-"})`}
-                      disabled={busy || !health || health.replay_only} onClick={() => load(x.id)}>
+              <button key={x.id} className="btn small" title={x.description ?? ""} disabled={!canLoad}
+                      onClick={() => load(x.id)}>
                 {x.name}
               </button>
             ))}
@@ -60,21 +60,18 @@ export function Welcome({ health, onSample, onReplay }: {
         )}
         {error && <div className="error-box small" style={{ marginTop: 10 }}>{error}</div>}
       </div>
-      <div className="metrics">
-        {STEPS.map(([t, d], i) => (
-          <div key={t} className="metric">
-            <div className="label">{i + 1}. {t}</div>
-            <div className="small" style={{ marginTop: 4 }}>{d}</div>
+      <div className="steps">
+        {STEPS.map(([t, d]) => (
+          <div key={t} className="step">
+            <strong>{t}</strong>
+            <span className="small muted">{d}</span>
           </div>
         ))}
       </div>
-      <p className="small muted">
-        Try asking: “Why did our revenue decline last quarter, and which customer segments contributed most?”
-      </p>
       {(health?.replays ?? 0) > 0 && (
-        <div className="stack">
-          <h3 style={{ margin: "8px 0 0" }}>Or watch a recorded investigation</h3>
-          <div className="small muted">Real runs on Cloudflare Workers AI, replayed step by step. No AI budget used.</div>
+        <div className="stack" style={{ marginTop: 8 }}>
+          <h3 style={{ margin: 0, fontFamily: "var(--serif)", fontSize: 18 }}>Or watch an example</h3>
+          <div className="small muted">Real questions answered earlier, replayed step by step.</div>
           <ReplayList onOpen={onReplay} />
         </div>
       )}

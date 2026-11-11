@@ -10,7 +10,7 @@ export function EvalsView() {
   if (error)
     return (
       <div className="card">
-        <h3>Agent evaluation</h3>
+        <h3>How it is tested</h3>
         <p className="muted">{error}</p>
         <pre className="code">cd backend{"\n"}python -m evals.run            # live LLM{"\n"}python -m evals.run --mode scripted   # offline</pre>
       </div>
@@ -21,7 +21,7 @@ export function EvalsView() {
   return (
     <div className="stack">
       <div className="card">
-        <h3>Latest evaluation <span className="badge muted">{data.meta.mode}</span></h3>
+        <h3>Latest test run <span className="badge muted">{data.meta.mode}</span></h3>
         <p className="small muted">{data.meta.timestamp} · {data.meta.provider} · {data.meta.model}</p>
         <p className="small muted">
           A case passes only if every check passes: primary conclusion (structured answer), period, metric, grouping,

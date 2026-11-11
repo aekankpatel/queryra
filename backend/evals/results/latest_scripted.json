@@ -1,6 +1,6 @@
 {
   "meta": {
-    "timestamp": "2026-11-09T05:56:19+00:00",
+    "timestamp": "2026-11-11T08:32:57+00:00",
     "mode": "scripted",
     "provider": "scripted",
     "model": "scripted",
@@ -26,8 +26,8 @@
     "sql_validity": 0.584,
     "tool_selection_f1": 1.0,
     "hallucination_rate": 0.0,
-    "avg_latency_s": 1.215,
-    "avg_total_tokens": 25753.0,
+    "avg_latency_s": 1.19,
+    "avg_total_tokens": 25747.5,
     "avg_tool_calls": 8.5,
     "error_recovery_rate": 1.0,
     "scorer_calibration": 1.0,
@@ -85,8 +85,8 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 1.63,
-      "total_tokens": 20269,
+      "latency_s": 1.58,
+      "total_tokens": 20265,
       "tokens_by_stage": {
         "plan": {
           "calls": 1,
@@ -95,7 +95,7 @@
         },
         "act": {
           "calls": 8,
-          "input_tokens": 11025,
+          "input_tokens": 11023,
           "output_tokens": 172
         },
         "reflect": {
@@ -105,7 +105,7 @@
         },
         "synthesize": {
           "calls": 2,
-          "input_tokens": 4018,
+          "input_tokens": 4016,
           "output_tokens": 875
         }
       },
@@ -190,8 +190,8 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.73,
-      "total_tokens": 29425,
+      "latency_s": 0.68,
+      "total_tokens": 29431,
       "tokens_by_stage": {
         "plan": {
           "calls": 1,
@@ -200,7 +200,7 @@
         },
         "act": {
           "calls": 12,
-          "input_tokens": 18627,
+          "input_tokens": 18632,
           "output_tokens": 264
         },
         "reflect": {
@@ -210,7 +210,7 @@
         },
         "synthesize": {
           "calls": 2,
-          "input_tokens": 3924,
+          "input_tokens": 3925,
           "output_tokens": 860
         }
       },
@@ -294,8 +294,8 @@
       },
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
-      "latency_s": 0.94,
-      "total_tokens": 29715,
+      "latency_s": 0.86,
+      "total_tokens": 29709,
       "tokens_by_stage": {
         "plan": {
           "calls": 1,
@@ -304,7 +304,7 @@
         },
         "act": {
           "calls": 12,
-          "input_tokens": 18746,
+          "input_tokens": 18741,
           "output_tokens": 264
         },
         "reflect": {
@@ -314,7 +314,7 @@
         },
         "synthesize": {
           "calls": 2,
-          "input_tokens": 4041,
+          "input_tokens": 4040,
           "output_tokens": 873
         }
       },
@@ -397,7 +397,7 @@
       "hallucination_rate": 0.0,
       "findings_verified": "5/5",
       "latency_s": 0.8,
-      "total_tokens": 31237,
+      "total_tokens": 31230,
       "tokens_by_stage": {
         "plan": {
           "calls": 1,
@@ -406,17 +406,17 @@
         },
         "act": {
           "calls": 12,
-          "input_tokens": 19381,
+          "input_tokens": 19376,
           "output_tokens": 264
         },
         "reflect": {
           "calls": 3,
-          "input_tokens": 4915,
+          "input_tokens": 4914,
           "output_tokens": 201
         },
         "synthesize": {
           "calls": 2,
-          "input_tokens": 4480,
+          "input_tokens": 4479,
           "output_tokens": 867
         }
       },

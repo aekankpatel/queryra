@@ -33,7 +33,7 @@ export function DataView({ dataset }: { dataset: Dataset }) {
   }
 
   if (error) return <div className="error-box">{error}</div>;
-  if (!profile) return <div className="empty">Profiling dataset…</div>;
+  if (!profile) return <div className="empty">Reading your data…</div>;
   const sampleCols = profile.sample_rows.length ? Object.keys(profile.sample_rows[0]) : [];
 
   return (
@@ -43,9 +43,9 @@ export function DataView({ dataset }: { dataset: Dataset }) {
         <div className="metrics">
           <div className="metric"><div className="label">Rows</div><div className="value">{profile.row_count.toLocaleString()}</div></div>
           <div className="metric"><div className="label">Columns</div><div className="value">{profile.column_count}</div></div>
-          <div className="metric"><div className="label">Numeric</div><div className="value">{profile.columns.filter((c) => c.role === "numeric").length}</div></div>
-          <div className="metric"><div className="label">Categorical</div><div className="value">{profile.columns.filter((c) => c.role === "categorical").length}</div></div>
-          <div className="metric"><div className="label">Temporal</div><div className="value">{profile.columns.filter((c) => c.role === "temporal").length}</div></div>
+          <div className="metric"><div className="label">Numbers</div><div className="value">{profile.columns.filter((c) => c.role === "numeric").length}</div></div>
+          <div className="metric"><div className="label">Categories</div><div className="value">{profile.columns.filter((c) => c.role === "categorical").length}</div></div>
+          <div className="metric"><div className="label">Dates</div><div className="value">{profile.columns.filter((c) => c.role === "temporal").length}</div></div>
           <div className="metric"><div className="label">Warnings</div><div className="value">{profile.warnings.length}</div></div>
         </div>
         {profile.warnings.length > 0 && (
@@ -99,7 +99,7 @@ export function DataView({ dataset }: { dataset: Dataset }) {
       </div>
 
       <div className="card ask">
-        <h3>SQL console <span className="badge muted">read-only sandbox</span></h3>
+        <h3>Run your own SQL <span className="badge muted">read only</span></h3>
         <textarea className="mono" value={sql} onChange={(e) => setSql(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) runSql(); }} />
         <div className="row" style={{ marginTop: 8 }}>

@@ -61,3 +61,18 @@ def test_preview_handles_every_tool_output_shape():
                 {"data": {"rows": 1}}, {"columns": {"a": 1}, "rows": 2}, [], None, "text"):
         preview_table(odd)  # never raises
     assert summarize("descriptive_statistics", stats)
+
+
+def test_pdf_text_has_no_undrawable_characters(tmp_path):
+    """Regression: a non-breaking hyphen ("one‑off") printed as a black box in the PDF."""
+    import pypdf
+
+    from databeacon.reporting.pdf import build_pdf, pdf_text
+
+    assert pdf_text("one‑off ≤ 5 → ok, café, 12°C, 20 %") == "one-off <= 5 -> ok, café, 12°C, 20 %"
+    out = tmp_path / "r.pdf"
+    build_pdf(out, {"title": "Seasonal one‑off", "question": "q", "dataset": "d", "summary": "A one‑off promo.",
+                    "findings": [], "charts": [], "evidence": [], "limitations": ["Seasonal or one‑off effects."],
+                    "timeline": [], "metrics": {}, "scope": {}})
+    text = "".join(p.extract_text() for p in pypdf.PdfReader(out).pages)
+    assert "one-off" in text and "■" not in text

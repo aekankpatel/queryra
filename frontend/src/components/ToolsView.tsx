@@ -10,12 +10,12 @@ export function ToolsView() {
     api.catalog().then(setCat).catch((e) => setError(e.message));
   }, []);
   if (error) return <div className="error-box">{error}</div>;
-  if (!cat) return <div className="empty">Discovering MCP servers…</div>;
+  if (!cat) return <div className="empty">Loading tools…</div>;
   const servers = [...new Set(cat.tools.map((t) => t.server))];
   return (
     <div className="stack">
       <div className="card">
-        <h3>MCP tool discovery</h3>
+        <h3>Tools the AI can use</h3>
         <p className="muted small">
           The agent connects to each MCP server at the start of a run, lists its tools, resources and prompts, and
           exposes the tools to the LLM. Nothing is hard-coded in the agent loop.

@@ -10,7 +10,7 @@ export function VerificationBadge({ v }: { v?: Verification }) {
   } as const;
   const [cls, label] = map[v.status];
   return (
-    <span className={`badge ${cls}`} title={`${v.supported}/${v.checked_numbers} numbers matched tool outputs`}>
+    <span className={`badge ${cls}`} title={`${v.supported} of ${v.checked_numbers} numbers match the data`}>
       {label}
       {v.checked_numbers > 0 && ` ${v.supported}/${v.checked_numbers}`}
     </span>
@@ -18,7 +18,7 @@ export function VerificationBadge({ v }: { v?: Verification }) {
 }
 
 export function Findings({ findings, onEvidence }: { findings: Finding[]; onEvidence: (id: string) => void }) {
-  if (!findings.length) return <div className="muted">No findings.</div>;
+  if (!findings.length) return <div className="muted">Nothing found.</div>;
   return (
     <div>
       {findings.map((f, i) => (
@@ -29,7 +29,7 @@ export function Findings({ findings, onEvidence }: { findings: Finding[]; onEvid
           </div>
           <div className="statement">{f.statement}</div>
           <div className="row small">
-            <span className="muted">Evidence:</span>
+            <span className="muted">Based on:</span>
             {f.evidence_ids.length === 0 && <span className="muted">none cited</span>}
             {f.evidence_ids.map((id) => (
               <span key={id} className="ev-chip" onClick={() => onEvidence(id)}>{id}</span>

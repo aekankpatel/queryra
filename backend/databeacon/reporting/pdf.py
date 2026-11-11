@@ -24,7 +24,7 @@ from .charts import PALETTE
 PAL = [colors.HexColor(c) for c in PALETTE]
 INK = colors.HexColor("#0f172a")
 MUTED = colors.HexColor("#64748b")
-ACCENT = colors.HexColor("#2563eb")
+ACCENT = colors.HexColor("#2f6b4f")
 
 
 def _styles():
@@ -40,8 +40,29 @@ def _styles():
     }
 
 
+_PDF_CHARS = {"\u2010": "-", "\u2011": "-", "\u2012": "-", "\u2212": "-", "\u2009": " ", "\u202f": " ",
+              "\u2007": " ", "\u200b": "", "\u2192": "->", "\u2190": "<-", "\u2264": "<=", "\u2265": ">=",
+              "\u2248": "~", "\u2260": "!=", "\u2191": "up", "\u2193": "down"}
+
+
+def pdf_text(text: Any) -> str:
+    """Text the built-in PDF fonts can draw (they cover Windows-1252): common Unicode punctuation is
+    mapped to ASCII, anything else falls back to its closest plain form instead of a black box."""
+    import unicodedata
+
+    out = []
+    for ch in str(text if text is not None else ""):
+        ch = _PDF_CHARS.get(ch, ch)
+        try:
+            ch.encode("cp1252")
+        except UnicodeEncodeError:
+            ch = unicodedata.normalize("NFKD", ch).encode("cp1252", "ignore").decode("cp1252") or "?"
+        out.append(ch)
+    return "".join(out)
+
+
 def _p(text: Any, style) -> Paragraph:
-    return Paragraph(escape(str(text if text is not None else "")).replace("\n", "<br/>"), style)
+    return Paragraph(escape(pdf_text(text)).replace("\n", "<br/>"), style)
 
 
 def _num(v: Any) -> float | None:
@@ -73,7 +94,7 @@ def chart_drawing(chart: dict[str, Any], width: float = 16 * cm, height: float =
     except ValueError:
         return None
     d = Drawing(width, height)
-    d.add(String(0, height - 12, str(chart.get("title") or ""), fontName="Helvetica-Bold", fontSize=10, fillColor=INK))
+    d.add(String(0, height - 12, pdf_text(chart.get("title") or ""), fontName="Helvetica-Bold", fontSize=10, fillColor=INK))
     rows = rows[:60]
     categories = [str(r[xi])[:18] for r in rows]
 
@@ -107,7 +128,7 @@ def chart_drawing(chart: dict[str, Any], width: float = 16 * cm, height: float =
         lg = Legend()
         lg.x, lg.y = plot_h + 2 * cm, plot_h
         lg.fontSize = 7
-        lg.colorNamePairs = [(PAL[i % len(PAL)], f"{categories[i]} ({_fmt(v)})") for i, v in enumerate(pie.data)]
+        lg.colorNamePairs = [(PAL[i % len(PAL)], pdf_text(f"{categories[i]} ({_fmt(v)})")) for i, v in enumerate(pie.data)]
         d.add(lg)
         return d
     if ctype in {"line", "area", "scatter"}:
@@ -130,7 +151,7 @@ def chart_drawing(chart: dict[str, Any], width: float = 16 * cm, height: float =
         bc = HorizontalBarChart() if horizontal else VerticalBarChart()
         bc.x, bc.y, bc.width, bc.height = (3 * cm if horizontal else 1.8 * cm), 1.0 * cm, plot_w - 1.5 * cm, plot_h - 0.6 * cm
         bc.data = [vals for _, vals in series]
-        bc.categoryAxis.categoryNames = categories
+        bc.categoryAxis.categoryNames = [pdf_text(c) for c in categories]
         bc.categoryAxis.labels.fontSize = 6
         if not horizontal:
             bc.categoryAxis.labels.angle = 30 if len(categories) > 6 else 0
@@ -148,21 +169,22 @@ def chart_drawing(chart: dict[str, Any], width: float = 16 * cm, height: float =
         lg = Legend()
         lg.x, lg.y = width - 2.4 * cm, height - 0.8 * cm
         lg.fontSize = 6.5
-        lg.colorNamePairs = [(PAL[i % len(PAL)], name[:16]) for i, (name, _) in enumerate(series)]
+        lg.colorNamePairs = [(PAL[i % len(PAL)], pdf_text(name)[:16]) for i, (name, _) in enumerate(series)]
         d.add(lg)
     return d
 
 
 def _table(rows: list[list[Any]], header: list[str], col_widths=None, font=7.5) -> Table:
-    data = [header] + [[_fmt(c) if not isinstance(c, Paragraph) else c for c in r] for r in rows]
+    data = [[pdf_text(h) for h in header]] + [[pdf_text(_fmt(c)) if not isinstance(c, Paragraph) else c for c in r]
+                                               for r in rows]
     t = Table(data, colWidths=col_widths, repeatRows=1)
     t.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e2e8f0")),
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#ece7dc")),
         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
         ("FONTSIZE", (0, 0), (-1, -1), font),
         ("TEXTCOLOR", (0, 0), (-1, -1), INK),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8fafc")]),
-        ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#cbd5e1")),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8f5ef")]),
+        ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#d8d1c3")),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
     ]))
     return t

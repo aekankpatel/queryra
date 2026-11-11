@@ -18,9 +18,9 @@ const Q = 'Why did our revenue decline last quarter, and which customer segments
   // 1. replay
   console.log('STEP 1. replay');
   const a = await page(8000);
-  await a.getByText('Or watch a recorded investigation').waitFor();
+  await a.getByText('Or watch an example').waitFor();
   await a.locator('button.card', { hasText: 'Why did our revenue decline' }).first().click();
-  await a.getByText('Replaying the agent').waitFor();
+  await a.getByText('Playing back the saved steps').waitFor();
   await a.screenshot({ path: '' + OUT + 'replay_playing.png' });
   await a.getByRole('button', { name: 'Show everything' }).click();
   await a.getByText('Answer', { exact: true }).waitFor();
@@ -31,30 +31,30 @@ const Q = 'Why did our revenue decline last quarter, and which customer segments
   await a.screenshot({ path: '' + OUT + 'replay_done.png', fullPage: true });
   // 2. live inline run to completion
   console.log('STEP 2. live inline run to completion');
-  await a.getByRole('button', { name: 'Analyze' }).click();
-  await a.getByRole('button', { name: 'Try it with sample e-commerce data' }).click();
+  await a.getByRole('button', { name: 'Ask', exact: true }).click();
+  await a.getByRole('button', { name: 'Try it with sample shop data' }).click();
   await a.locator('textarea').first().fill(Q);
-  await a.getByRole('button', { name: 'Run analysis' }).click();
-  await a.getByText('Download PDF report').waitFor({ timeout: 90000 });
+  await a.getByRole('button', { name: 'Get answer' }).click();
+  await a.getByText('Download PDF', { exact: true }).waitFor({ timeout: 90000 });
   out.liveCompleted = await a.locator('.badge', { hasText: 'completed' }).count() > 0;
   // 3. reconnect
   console.log('STEP 3. reconnect'); //: start on A, open on B mid-run
-  await a.getByRole('button', { name: 'New' }).click();
+  await a.getByRole('button', { name: 'New question' }).click();
   await a.locator('textarea').first().fill(Q);
-  await a.getByRole('button', { name: 'Run analysis' }).click();
+  await a.getByRole('button', { name: 'Get answer' }).click();
   await a.waitForTimeout(5000);
   const bpage = await page(8001);
   await bpage.locator('a', { hasText: 'Why did our revenue decline' }).first().click();
   await bpage.getByText('Reconnected to saved progress').waitFor({ timeout: 15000 });
   out.reconnectBanner = true;
   await bpage.screenshot({ path: '' + OUT + 'reconnected.png' });
-  await bpage.getByText('Download PDF report').waitFor({ timeout: 90000 });
+  await bpage.getByText('Download PDF', { exact: true }).waitFor({ timeout: 90000 });
   out.reconnectedRunCompleted = await bpage.locator('.badge', { hasText: 'completed' }).count() > 0;
   // 4. interrupted
   console.log('STEP 4. interrupted'); //: kill the executor mid-run, look from B
-  await a.getByRole('button', { name: 'New' }).click();
+  await a.getByRole('button', { name: 'New question' }).click();
   await a.locator('textarea').first().fill(Q);
-  await a.getByRole('button', { name: 'Run analysis' }).click();
+  await a.getByRole('button', { name: 'Get answer' }).click();
   await a.waitForTimeout(4000);
   execSync(KILL_A);
   await bpage.reload();
@@ -67,7 +67,7 @@ const Q = 'Why did our revenue decline last quarter, and which customer segments
   out.interruptionReason = await bpage.locator('[role=alert]').innerText();
   await bpage.screenshot({ path: '' + OUT + 'interrupted.png' });
   await bpage.getByRole('button', { name: 'Start it again' }).click();
-  await bpage.getByText('Download PDF report').waitFor({ timeout: 90000 });
+  await bpage.getByText('Download PDF', { exact: true }).waitFor({ timeout: 90000 });
   out.rerunCompleted = await bpage.locator('.badge', { hasText: 'completed' }).count() > 0;
   out.issues = issues;
   console.log(JSON.stringify(out, null, 1));

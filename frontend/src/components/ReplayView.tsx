@@ -18,18 +18,18 @@ export function ReplayList({ onOpen }: { onOpen: (id: string) => void }) {
     api.replays().then(setItems).catch((e) => setError(e.message));
   }, []);
   if (error) return <div className="error-box small">{error}</div>;
-  if (!items) return <div className="muted small">Loading recorded investigations…</div>;
+  if (!items) return <div className="muted small">Loading examples…</div>;
   return (
     <div className="charts" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
       {items.map((r) => (
         <button key={r.id} className="card" style={{ textAlign: "left", cursor: "pointer" }} onClick={() => onOpen(r.id)}>
-          <div className="small muted">Recorded investigation</div>
+          <div className="small muted">Example</div>
           <strong>{r.question}</strong>
           <div className="small" style={{ marginTop: 6 }}>
             Answer: <span className="badge ok">{r.answer ?? "see report"}</span>
           </div>
           <div className="small muted" style={{ marginTop: 6 }}>
-            {r.metrics.llm_calls} LLM calls · {r.metrics.tool_calls} tool calls · {Math.round(r.metrics.latency_s)} s ·{" "}
+            {r.metrics.llm_calls} AI calls · {r.metrics.tool_calls} tool calls · {Math.round(r.metrics.latency_s)} s ·{" "}
             {fmtNum(r.metrics.total_tokens)} tokens
           </div>
         </button>
@@ -70,7 +70,7 @@ export function ReplayView({ id, onBack }: { id: string; onBack: () => void }) {
   }, [replay, playing, shown, done, events]);
 
   if (error) return <div className="error-box">{error}</div>;
-  if (!replay) return <div className="empty">Loading recorded investigation…</div>;
+  if (!replay) return <div className="empty">Loading example…</div>;
   const res = replay.result;
   const syn = res.synthesis;
   const visible = events.slice(0, shown).map((e, i) => (i === shown - 1 && !done ? { ...e, status: "running" as const } : e));
@@ -83,37 +83,36 @@ export function ReplayView({ id, onBack }: { id: string; onBack: () => void }) {
       <div className="stack">
         <div className="card">
           <div className="row" style={{ justifyContent: "space-between" }}>
-            <button className="btn small" onClick={onBack}>← All recorded investigations</button>
+            <button className="btn small" onClick={onBack}>← All examples</button>
             <div className="row">
               {!done && <button className="btn small" onClick={() => setPlaying((p) => !p)}>{playing ? "Pause" : "Play"}</button>}
               {!done && <button className="btn small" onClick={() => setShown(events.length)}>Show everything</button>}
               {done && <button className="btn small" onClick={() => { setShown(0); setPlaying(true); }}>Replay</button>}
               {s.has_report && (
                 <a className="btn primary small" href={api.replayReportUrl(replay.id)} target="_blank" rel="noreferrer">
-                  Download PDF report
+                  Download PDF
                 </a>
               )}
             </div>
           </div>
           <h3 style={{ margin: "12px 0 4px" }}>{replay.question}</h3>
           <div className="small muted">
-            Recorded {new Date(replay.recorded_at).toLocaleString()} on {replay.recorded_with.provider === "cloudflare"
-              ? "Cloudflare Workers AI" : replay.recorded_with.provider} ({replay.recorded_with.model}) against the sample
-            dataset ({fmtNum(replay.dataset.row_count)} rows). Replaying it uses no AI budget.
+            Answered on {new Date(replay.recorded_at).toLocaleDateString()} using the sample shop data
+            ({fmtNum(replay.dataset.row_count)} rows). Watching it again doesn't use the daily limit.
           </div>
           <div className="metrics" style={{ marginTop: 12 }}>
-            <M l="Recorded latency" v={`${Math.round(s.metrics.latency_s)}s`} />
-            <M l="LLM calls" v={s.metrics.llm_calls} />
+            <M l="Time" v={`${Math.round(s.metrics.latency_s)} s`} />
+            <M l="AI calls" v={s.metrics.llm_calls} />
             <M l="Tool calls" v={s.metrics.tool_calls} />
             <M l="Tokens" v={fmtNum(s.metrics.total_tokens)} />
-            <M l="Neurons used then" v={`~${s.metrics.approx_neurons}`} />
-            <M l="Hallucination" v={s.hallucination_rate === null ? "–" : `${(s.hallucination_rate * 100).toFixed(1)}%`} />
+            <M l="AI units used" v={`~${s.metrics.approx_neurons}`} />
+            <M l="Unsupported" v={s.hallucination_rate === null ? "–" : `${(s.hallucination_rate * 100).toFixed(1)}%`} />
           </div>
         </div>
 
         {!done && (
           <div className="card small muted" role="status">
-            Replaying the agent's recorded steps ({shown}/{events.length}) at {SPEED}× speed…
+            Playing back the saved steps ({shown} of {events.length}), {SPEED}× faster than it happened…
           </div>
         )}
 
@@ -127,11 +126,11 @@ export function ReplayView({ id, onBack }: { id: string; onBack: () => void }) {
                   <VerificationBadge v={syn.summary_verification} />
                 </div>
                 <p className="summary">{syn.summary}</p>
-                <h3>Findings</h3>
+                <h3>What it found</h3>
                 <Findings findings={syn.findings} onEvidence={showEvidence} />
                 {!!syn.limitations?.length && (
                   <>
-                    <h3>Limitations</h3>
+                    <h3>Keep in mind</h3>
                     <ul className="muted">{syn.limitations.map((x, i) => <li key={i}>{x}</li>)}</ul>
                   </>
                 )}
@@ -139,12 +138,12 @@ export function ReplayView({ id, onBack }: { id: string; onBack: () => void }) {
             )}
             {!!res.charts?.length && (
               <div className="card">
-                <h3>Visualizations</h3>
+                <h3>Charts</h3>
                 <div className="charts">
                   {res.charts.map((c) => (
                     <div key={c.chart_id}>
                       <PlotlyChart chart={c} />
-                      {c.origin === "fallback" && <div className="small"><span className="badge purple">auto fallback</span></div>}
+                      {c.origin === "fallback" && <div className="small"><span className="badge purple">added automatically</span></div>}
                     </div>
                   ))}
                 </div>
@@ -172,7 +171,7 @@ export function ReplayView({ id, onBack }: { id: string; onBack: () => void }) {
         )}
       </div>
       <div className="card" style={{ position: "sticky", top: 0 }}>
-        <h3>Agent execution timeline <span className="badge muted">recorded</span></h3>
+        <h3>Steps <span className="badge muted">recorded</span></h3>
         <Timeline events={visible} onEvidence={showEvidence} emptyText="Starting playback…" />
       </div>
       <EvidenceDrawer evidence={drawer} onClose={() => setDrawer(null)} />

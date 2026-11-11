@@ -4,6 +4,19 @@ import type { Chart } from "../types";
 
 const dark = () => window.matchMedia?.("(prefers-color-scheme: dark)").matches;
 
+// charts saved before the redesign use the old palette: show them in the current one
+const OLD = ["#2563eb", "#f97316", "#10b981", "#a855f7", "#ef4444", "#14b8a6", "#eab308", "#64748b"];
+const PALETTE = ["#2f6b4f", "#c2703d", "#3f6e9a", "#8a6bb0", "#b5463f", "#4b8f8c", "#c9a227", "#7a7368"];
+const recolor = (v: unknown): unknown => {
+  if (typeof v === "string") {
+    const i = OLD.indexOf(v.toLowerCase());
+    return i >= 0 ? PALETTE[i] : v;
+  }
+  if (Array.isArray(v)) return v.map(recolor);
+  if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, recolor(x)]));
+  return v;
+};
+
 export function PlotlyChart({ chart, height = 340 }: { chart: Chart; height?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -15,12 +28,13 @@ export function PlotlyChart({ chart, height = 340 }: { chart: Chart; height?: nu
       autosize: true,
       paper_bgcolor: "rgba(0,0,0,0)",
       plot_bgcolor: "rgba(0,0,0,0)",
-      font: { family: "Inter, system-ui, sans-serif", color: isDark ? "#e5e7eb" : "#0f172a", size: 12 },
-      xaxis: { ...((chart.figure.layout as any)?.xaxis ?? {}), gridcolor: isDark ? "#1f2a3d" : "#e2e8f0" },
-      yaxis: { ...((chart.figure.layout as any)?.yaxis ?? {}), gridcolor: isDark ? "#1f2a3d" : "#e2e8f0" },
+      font: { family: "system-ui, sans-serif", color: isDark ? "#ebe7df" : "#1f1d1a", size: 12 },
+      colorway: PALETTE,
+      xaxis: { ...((chart.figure.layout as any)?.xaxis ?? {}), gridcolor: isDark ? "#33302a" : "#e4dfd3" },
+      yaxis: { ...((chart.figure.layout as any)?.yaxis ?? {}), gridcolor: isDark ? "#33302a" : "#e4dfd3" },
       template: undefined,
     };
-    Plotly.react(ref.current, chart.figure.data as Plotly.Data[], layout as Partial<Plotly.Layout>, {
+    Plotly.react(ref.current, recolor(chart.figure.data) as Plotly.Data[], layout as Partial<Plotly.Layout>, {
       responsive: true,
       displaylogo: false,
     });

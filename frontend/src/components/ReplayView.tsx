@@ -20,21 +20,18 @@ export function ReplayList({ onOpen }: { onOpen: (id: string) => void }) {
   if (error) return <div className="error-box small">{error}</div>;
   if (!items) return <div className="muted small">Loading examples…</div>;
   return (
-    <div className="charts" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))" }}>
+    <ul className="example-list">
       {items.map((r) => (
-        <button key={r.id} className="card" style={{ textAlign: "left", cursor: "pointer" }} onClick={() => onOpen(r.id)}>
-          <div className="small muted">Example</div>
-          <strong>{r.question}</strong>
-          <div className="small" style={{ marginTop: 6 }}>
-            Answer: <span className="badge ok">{r.answer ?? "see report"}</span>
-          </div>
-          <div className="small muted" style={{ marginTop: 6 }}>
-            {r.metrics.llm_calls} AI calls · {r.metrics.tool_calls} tool calls · {Math.round(r.metrics.latency_s)} s ·{" "}
-            {fmtNum(r.metrics.total_tokens)} tokens
-          </div>
-        </button>
+        <li key={r.id}>
+          <button onClick={() => onOpen(r.id)}>
+            <span className="q">{r.question}</span>
+            <span className="small muted">
+              Answer: {r.answer ?? "see report"} · took {Math.round(r.metrics.latency_s)} s
+            </span>
+          </button>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
 

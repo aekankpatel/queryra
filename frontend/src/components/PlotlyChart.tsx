@@ -6,7 +6,7 @@ const dark = () => window.matchMedia?.("(prefers-color-scheme: dark)").matches;
 
 // charts saved before the redesign use the old palette: show them in the current one
 const OLD = ["#2563eb", "#f97316", "#10b981", "#a855f7", "#ef4444", "#14b8a6", "#eab308", "#64748b"];
-const PALETTE = ["#2f6b4f", "#c2703d", "#3f6e9a", "#8a6bb0", "#b5463f", "#4b8f8c", "#c9a227", "#7a7368"];
+const PALETTE = ["#1f5fbf", "#d9822b", "#2f8a57", "#7a5bb8", "#c4403a", "#2b8c8c", "#b8962e", "#77746e"];
 const recolor = (v: unknown): unknown => {
   if (typeof v === "string") {
     const i = OLD.indexOf(v.toLowerCase());
@@ -28,10 +28,10 @@ export function PlotlyChart({ chart, height = 340 }: { chart: Chart; height?: nu
       autosize: true,
       paper_bgcolor: "rgba(0,0,0,0)",
       plot_bgcolor: "rgba(0,0,0,0)",
-      font: { family: "system-ui, sans-serif", color: isDark ? "#ebe7df" : "#1f1d1a", size: 12 },
+      font: { family: "system-ui, sans-serif", color: isDark ? "#ececea" : "#1b1b1a", size: 12 },
       colorway: PALETTE,
-      xaxis: { ...((chart.figure.layout as any)?.xaxis ?? {}), gridcolor: isDark ? "#33302a" : "#e4dfd3" },
-      yaxis: { ...((chart.figure.layout as any)?.yaxis ?? {}), gridcolor: isDark ? "#33302a" : "#e4dfd3" },
+      xaxis: { ...((chart.figure.layout as any)?.xaxis ?? {}), gridcolor: isDark ? "#2b2b2b" : "#e6e6e3" },
+      yaxis: { ...((chart.figure.layout as any)?.yaxis ?? {}), gridcolor: isDark ? "#2b2b2b" : "#e6e6e3" },
       template: undefined,
     };
     Plotly.react(ref.current, recolor(chart.figure.data) as Plotly.Data[], layout as Partial<Plotly.Layout>, {

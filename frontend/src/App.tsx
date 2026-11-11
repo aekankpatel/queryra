@@ -164,7 +164,7 @@ function DemoNotice({ health }: { health: Health }) {
   const [saved, setSaved] = useState(Boolean(accessCode()));
   const l = health.limits;
   return (
-    <div className="notice small" style={{ marginBottom: 14 }}>
+    <div className="notice" style={{ marginBottom: 22 }}>
       <strong>This is a free demo.</strong>{" "}
       {l && <>
         Files up to {l.max_upload_mb} MB. Only you can see your data, and it's deleted after{" "}

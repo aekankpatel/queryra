@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { api } from "../api";
 import type { Dataset, SampleDataset } from "../types";
-import { SampleSource } from "./SampleSource";
 
 interface Props {
   datasets: Dataset[];
@@ -16,13 +15,12 @@ export function Sidebar({ datasets, selected, onSelect, onChanged, maxUploadMb }
   const [error, setError] = useState<string | null>(null);
   const [over, setOver] = useState(false);
   const [samples, setSamples] = useState<SampleDataset[]>([]);
-  const [pick, setPick] = useState("ecommerce");
+  const [loading, setLoading] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     api.samples().then(setSamples).catch(() => setSamples([]));
   }, []);
-  const picked = samples.find((s) => s.id === pick);
 
   async function upload(file: File) {
     if (maxUploadMb && file.size > maxUploadMb * 1024 * 1024) {
@@ -41,16 +39,18 @@ export function Sidebar({ datasets, selected, onSelect, onChanged, maxUploadMb }
     }
   }
 
-  async function sample() {
+  async function sample(id: string) {
     setBusy(true);
+    setLoading(id);
     setError(null);
     try {
-      const ds = await api.loadSample(pick);
+      const ds = await api.loadSample(id);
       onChanged(ds.id);
     } catch (e) {
       setError((e as Error).message);
     } finally {
       setBusy(false);
+      setLoading(null);
     }
   }
 
@@ -78,10 +78,10 @@ export function Sidebar({ datasets, selected, onSelect, onChanged, maxUploadMb }
           if (f) upload(f);
         }}
       >
-        {busy ? "Loading…" : (
+        {busy && !loading ? "Uploading…" : (
           <>
-            <strong>Upload a file</strong>
-            <div className="small">CSV, TSV, Parquet, JSON or XLSX{maxUploadMb ? ` · max ${maxUploadMb} MB` : ""}</div>
+            <span className="link">Upload a file</span>
+            <div className="small muted">CSV, Excel, Parquet or JSON{maxUploadMb ? `, up to ${maxUploadMb} MB` : ""}</div>
           </>
         )}
         <input
@@ -96,22 +96,6 @@ export function Sidebar({ datasets, selected, onSelect, onChanged, maxUploadMb }
           }}
         />
       </div>
-      <div className="section-title" style={{ marginTop: 4 }}>Samples</div>
-      <div className="row" style={{ gap: 6 }}>
-        <select className="sample-select" style={{ flex: 1, minWidth: 0 }} value={pick} aria-label="Sample dataset"
-                onChange={(e) => setPick(e.target.value)} disabled={busy}>
-          {(samples.length ? samples : [{ id: "ecommerce", name: "E-commerce orders (sample)" }]).map((s) => (
-            <option key={s.id} value={s.id}>{s.name}</option>
-          ))}
-        </select>
-        <button className="btn" onClick={sample} disabled={busy}>Load</button>
-      </div>
-      {picked && (
-        <div className="small muted stack" style={{ gap: 2 }}>
-          {picked.description && <span>{picked.description}</span>}
-          <SampleSource sample={picked} />
-        </div>
-      )}
       {error && <div className="error-box small">{error}</div>}
       {datasets.length === 0 && <div className="muted small">Nothing here yet.</div>}
       {datasets.map((d) => (
@@ -130,10 +114,20 @@ export function Sidebar({ datasets, selected, onSelect, onChanged, maxUploadMb }
             </button>
           </div>
           <div className="meta">
-            {d.row_count.toLocaleString()} rows · {d.column_count} cols · <span className="mono">{d.table}</span>
+            {d.row_count.toLocaleString()} rows, {d.column_count} columns
           </div>
         </div>
       ))}
+      <div className="section-title" style={{ marginTop: 12 }}>Or try a sample</div>
+      <ul className="sample-list">
+        {(samples.length ? samples : [{ id: "ecommerce", name: "E-commerce orders (sample)" } as SampleDataset]).map((x) => (
+          <li key={x.id}>
+            <button disabled={busy} onClick={() => sample(x.id)} title={x.description ?? ""}>
+              {loading === x.id ? "Loading…" : x.name.replace(" (sample)", "")}
+            </button>
+          </li>
+        ))}
+      </ul>
     </aside>
   );
 }

@@ -24,7 +24,7 @@ from .charts import PALETTE
 PAL = [colors.HexColor(c) for c in PALETTE]
 INK = colors.HexColor("#0f172a")
 MUTED = colors.HexColor("#64748b")
-ACCENT = colors.HexColor("#2f6b4f")
+ACCENT = colors.HexColor("#1f5fbf")
 
 
 def _styles():
@@ -179,12 +179,12 @@ def _table(rows: list[list[Any]], header: list[str], col_widths=None, font=7.5) 
                                                for r in rows]
     t = Table(data, colWidths=col_widths, repeatRows=1)
     t.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#ece7dc")),
+        ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#efefed")),
         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
         ("FONTSIZE", (0, 0), (-1, -1), font),
         ("TEXTCOLOR", (0, 0), (-1, -1), INK),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8f5ef")]),
-        ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#d8d1c3")),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#f8f8f7")]),
+        ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#dcdcd8")),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
     ]))
     return t

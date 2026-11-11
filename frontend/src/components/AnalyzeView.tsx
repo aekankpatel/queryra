@@ -197,7 +197,7 @@ export function AnalyzeView({ dataset }: { dataset: Dataset }) {
     <div className="grid-2">
       <div className="stack">
         <div className="card ask">
-          <h3>Ask a question about <span className="mono">{dataset.name}</span></h3>
+          <h3>Ask a question about {dataset.name}</h3>
           {sample?.source && <div style={{ margin: "-6px 0 8px" }}><SampleSource sample={sample} /></div>}
           <textarea
             value={question}
@@ -383,13 +383,6 @@ export function AnalyzeView({ dataset }: { dataset: Dataset }) {
 
       <div className="card" style={{ position: "sticky", top: 0 }}>
         <h3>Steps</h3>
-        <div className="row small muted" style={{ marginBottom: 8 }}>
-          <Legend color="var(--accent)" label="step" />
-          <Legend color="var(--purple)" label="AI" />
-          <Legend color="var(--ok)" label="tool" />
-          <Legend color="var(--warn)" label="choice" />
-          <Legend color="var(--err)" label="error" />
-        </div>
         <Timeline events={live.events} onEvidence={showEvidence} />
       </div>
       <EvidenceDrawer evidence={drawer} onClose={() => setDrawer(null)} />
@@ -406,14 +399,6 @@ function Metric({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function Legend({ color, label }: { color: string; label: string }) {
-  return (
-    <span className="row" style={{ gap: 4 }}>
-      <span className="tl-dot" style={{ background: color, marginTop: 0 }} />
-      {label}
-    </span>
-  );
-}
 
 function ClarificationCard({ clar, onAnswer }: { clar: Clarification; onAnswer: (c: string) => void }) {
   const [text, setText] = useState("");

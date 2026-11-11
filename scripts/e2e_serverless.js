@@ -19,7 +19,7 @@ const Q = 'Why did our revenue decline last quarter, and which customer segments
   console.log('STEP 1. replay');
   const a = await page(8000);
   await a.getByText('Or watch an example').waitFor();
-  await a.locator('button.card', { hasText: 'Why did our revenue decline' }).first().click();
+  await a.locator('.example-list button', { hasText: 'Why did our revenue decline' }).first().click();
   await a.getByText('Playing back the saved steps').waitFor();
   await a.screenshot({ path: '' + OUT + 'replay_playing.png' });
   await a.getByRole('button', { name: 'Show everything' }).click();

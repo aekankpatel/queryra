@@ -2,17 +2,15 @@ import { useCallback, useEffect, useState } from "react";
 import { accessCode, api, ApiError, setAccessCode } from "./api";
 import { AnalyzeView } from "./components/AnalyzeView";
 import { DataView } from "./components/DataView";
-import { EvalsView } from "./components/EvalsView";
 import { Sidebar } from "./components/Sidebar";
-import { ToolsView } from "./components/ToolsView";
-import { ReplayList, ReplayView } from "./components/ReplayView";
+import { ReplayView } from "./components/ReplayView";
 import { Welcome } from "./components/Welcome";
 import { CONTACT_URL } from "./links";
 import type { Dataset, Health } from "./types";
 
-type Tab = "analyze" | "replays" | "data" | "tools" | "evals";
-const TABS: [Tab, string][] = [["analyze", "Ask"], ["replays", "Examples"], ["data", "Data"], ["tools", "Tools"],
-  ["evals", "Tests"]];
+type Tab = "analyze" | "replays" | "data";
+// Examples open from the home page; tool and test details are documented in the README.
+const TABS: [Tab, string][] = [["analyze", "Ask"], ["data", "Data"]];
 const REPO_URL = import.meta.env.VITE_REPO_URL ?? "https://github.com/aekankpatel/queryra";
 
 export default function App() {
@@ -69,7 +67,6 @@ export default function App() {
   }, [refresh]);
 
   const dataset = datasets.find((d) => d.id === selected) ?? null;
-  const needsDataset = tab === "analyze" || tab === "data";
 
   return (
     <div className="app">
@@ -116,36 +113,23 @@ export default function App() {
               The AI isn't set up on this server yet (no key for “{health.llm.provider}”). The examples still work.
             </div>
           )}
-          {health?.replay_only && tab === "analyze" && (
+          {health?.replay_only && tab !== "replays" && (
             <div className="card small" style={{ marginBottom: 14 }}>
               Live questions are turned off for now. You can still watch the examples below.
             </div>
           )}
-          {tab === "replays" ? (
-            replayId ? <ReplayView id={replayId} onBack={() => setReplayId(null)} />
-              : (
-                <div className="stack">
-                  <div className="card small">
-                    These are real questions answered earlier and saved. You can replay them step by step at any
-                    time, and they don't count towards the daily limit.
-                  </div>
-                  <ReplayList onOpen={openReplay} />
-                </div>
-              )
-          ) : needsDataset && !dataset ? (
+          {tab === "replays" && replayId ? (
+            <ReplayView id={replayId} onBack={() => { setReplayId(null); setTab("analyze"); }} />
+          ) : !dataset ? (
             <Welcome health={health} onReplay={openReplay} onSample={async (id?: string) => {
               const ds = await api.loadSample(id);
               await refresh(ds.id);
               setTab("analyze");
             }} />
-          ) : tab === "analyze" && dataset ? (
-            <AnalyzeView dataset={dataset} />
-          ) : tab === "data" && dataset ? (
+          ) : tab === "data" ? (
             <DataView dataset={dataset} />
-          ) : tab === "tools" ? (
-            <ToolsView />
           ) : (
-            <EvalsView />
+            <AnalyzeView dataset={dataset} onReplay={openReplay} />
           )}
           <footer className="footer small muted">
             Queryra, made by Aekank Patel ·{" "}

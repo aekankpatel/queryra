@@ -21,6 +21,7 @@ Every decision, LLM call, tool call and SQL query is visible in a live **Agent E
 
 ## Contents
 
+- [Using the app](#using-the-app)
 - [What it does](#what-it-does)
 - [Architecture](#architecture)
 - [Quick start](#quick-start)
@@ -33,6 +34,7 @@ Every decision, LLM call, tool call and SQL query is visible in a live **Agent E
 - [Token efficiency](#token-efficiency)
 - [Security model](#security-model)
 - [Evaluation framework](#evaluation-framework)
+- [Benchmark results](#benchmark-results)
 - [Observability](#observability)
 - [REST API](#rest-api)
 - [Configuration](#configuration)
@@ -40,6 +42,21 @@ Every decision, LLM call, tool call and SQL query is visible in a live **Agent E
 - [Development](#development)
 
 ---
+
+## Using the app
+
+The live demo has two pages:
+
+- **Ask**: pick a dataset (upload a file or click one of the samples in the sidebar), type a question
+  in plain English and get an answer with charts, the list of steps the agent took, and a PDF report.
+  Asking your own questions needs an access code ([ask for one](https://aekankpatel.com/contact)).
+- **Data**: the loaded dataset's columns, types, missing values and sample rows, and a box for running
+  your own read-only SQL.
+
+Four **examples** (real questions answered earlier) are listed on the home page. Anyone can replay
+them step by step and download their PDFs; they need no access code and use no AI. The tools the
+agent can call are described in [MCP servers](#mcp-servers), and how answers are tested in
+[Evaluation framework](#evaluation-framework) and [Benchmark results](#benchmark-results).
 
 ## What it does
 
@@ -262,9 +279,9 @@ desktop MCP client.
 
 | Server | Tools | Resources / prompts |
 |---|---|---|
-| **databeacon-database** | `list_tables`, `profile_dataset`, `run_sql`, `sample_rows`, `column_values` | `datasets://catalog`, `dataset://{id}/schema`; prompts `sql_style_guide`, `hypothesis_prompt` |
-| **databeacon-analysis** | `descriptive_statistics`, `correlation_analysis`, `compare_groups` (Welch t / Mann-Whitney / ANOVA / Kruskal-Wallis + effect sizes), `chi_square_test`, `detect_anomalies` (z-score / IQR / MAD), `trend_analysis` (OLS slope, Mann-Kendall, change point), `period_comparison` (change attribution by dimension) | prompt `choose_test` |
-| **databeacon-report** | `create_chart` (Plotly), `generate_pdf_report` (ReportLab) | `reports://list`; prompt `report_outline` |
+| **queryra-database** | `list_tables`, `profile_dataset`, `run_sql`, `sample_rows`, `column_values` | `datasets://catalog`, `dataset://{id}/schema`; prompts `sql_style_guide`, `hypothesis_prompt` |
+| **queryra-analysis** | `descriptive_statistics`, `correlation_analysis`, `compare_groups` (Welch t / Mann-Whitney / ANOVA / Kruskal-Wallis + effect sizes), `chi_square_test`, `detect_anomalies` (z-score / IQR / MAD), `trend_analysis` (OLS slope, Mann-Kendall, change point), `period_comparison` (change attribution by dimension) | prompt `choose_test` |
+| **queryra-report** | `create_chart` (Plotly), `generate_pdf_report` (ReportLab) | `reports://list`; prompt `report_outline` |
 
 Run one on its own:
 
@@ -401,9 +418,40 @@ python -m evals.run --max-neurons 7000                                 # live be
 python -m evals.run --max-neurons 7000 --prior-spend 3500 --reuse-run return_rate=<run_id>   # resume
 ```
 
-Live results go to `evals/results/latest.json`/`.md`, offline ones to `latest_scripted.*`. Both show up
-in the **Evaluation** tab. Results from the earlier, lenient scorer are kept as
+Live results go to `evals/results/latest.json`/`.md`, offline ones to `latest_scripted.*` (also served
+at `GET /api/evals/latest`). Results from the earlier, lenient scorer are kept as
 `legacy_lenient_scorer_*` for history. The `live-eval` CI job only runs when started manually.
+
+## Benchmark results
+
+Six live cases on Cloudflare Workers AI (`@cf/openai/gpt-oss-120b`, free tier), 2 iterations and 6 steps
+per iteration, strict scorer. Full reports are in [`backend/evals/results`](backend/evals/results).
+
+| Case | Official result | Time | Neurons |
+|---|---|---|---|
+| Revenue decline attribution | pass | 84 s | 823 |
+| Discount shift | pass | 73 s | 721 |
+| Shipping time by region | pass | 57 s | 742 |
+| Return rate by category | pass | 64 s | 645 |
+| Revenue trend | fail (see below) | 80 s | 1,340 |
+| Data quality | fail (code bug, fixed) | 13 s | 277 |
+| **Total** | **4/6** | avg 62 s | 4,548 |
+
+Across the six cases: SQL validity 100%, hallucination rate 0%, tool-selection F1 0.80.
+
+- **Official result: 4/6**
+  ([`benchmark_…_resumed.md`](backend/evals/results/benchmark_cloudflare_gpt-oss-120b_2026-11-07_resumed.md)).
+  It was resumed after an interruption; the interrupted and failed earlier records are kept.
+- **Data quality** crashed on a display bug (`KeyError` on per-column statistics). After the fix, an
+  approved rerun passed every check in 39 s with 1,017 neurons
+  ([`postfix_validation_2026-11-08.md`](backend/evals/results/postfix_validation_2026-11-08.md)).
+  That rerun is reported separately and does not change the official score.
+- **Revenue trend** found the right month (October 2025) but failed literal checks: it grouped by
+  `month` of `order_date` and wrote "October 2025" instead of `2025-10`. The alignment check now compares
+  dates at the requested granularity, with negative tests so that wrong months, wrong years, other
+  date columns and monthly answers to daily questions still fail. Rescoring the recorded runs, without
+  calling the model again, gives **5/6**
+  ([`rescored_alignment_granularity_2026-11-08.md`](backend/evals/results/rescored_alignment_granularity_2026-11-08.md)).
 
 ## Observability
 

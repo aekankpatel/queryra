@@ -86,7 +86,7 @@ These are different and the UI says which one happened:
 ### Replay mode
 
 `/api/replays` serves four recorded investigations from real Cloudflare benchmark runs
-(`backend/replays/`): full timeline, answer, charts and PDF, played back in the "Recorded" tab with
+(`backend/replays/`): full timeline, answer, charts and PDF, listed as examples on the home page and played back with
 no LLM calls and no neurons. `DATABEACON_REPLAY_ONLY=1` turns the public demo into replay-only (live
 runs return 403), a safe fallback once the daily budget is spent or if you want zero AI usage.
 
@@ -184,7 +184,7 @@ billing beyond the allocation. Leave `DATABEACON_ALLOW_PAID_INFERENCE` unset.
 4. After the first deploy: check the build log for "Installing required dependencies" (runtime
    install) and no size error, then `/api/health` (`storage: d1`, `execution: inline`), one sample
    analysis, `/api/usage`, a page reload mid-run (should say *Reconnected to saved progress*) and the
-   Recorded tab.
+   examples on the home page.
 
 ### Self-hosting (Docker, no Vercel or D1)
 ```bash

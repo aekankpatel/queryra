@@ -80,7 +80,7 @@ export function ReplayView({ id, onBack }: { id: string; onBack: () => void }) {
       <div className="stack">
         <div className="card">
           <div className="row" style={{ justifyContent: "space-between" }}>
-            <button className="btn small" onClick={onBack}>← All examples</button>
+            <button className="btn small" onClick={onBack}>← Back</button>
             <div className="row">
               {!done && <button className="btn small" onClick={() => setPlaying((p) => !p)}>{playing ? "Pause" : "Play"}</button>}
               {!done && <button className="btn small" onClick={() => setShown(events.length)}>Show everything</button>}

@@ -9,6 +9,7 @@ import { EvidenceDrawer } from "./EvidenceDrawer";
 import { Findings, VerificationBadge } from "./Findings";
 import { PlotlyChart } from "./PlotlyChart";
 import { CONTACT_URL } from "../links";
+import { ReplayList } from "./ReplayView";
 import { SampleSource } from "./SampleSource";
 import { Timeline } from "./Timeline";
 
@@ -35,7 +36,7 @@ interface Live {
 
 const emptyLive = (): Live => ({ events: [], reflections: [], charts: [], evidence: [] });
 
-export function AnalyzeView({ dataset }: { dataset: Dataset }) {
+export function AnalyzeView({ dataset, onReplay }: { dataset: Dataset; onReplay?: (id: string) => void }) {
   const [question, setQuestion] = useState("");
   const [samples, setSamples] = useState<SampleDataset[] | null>(null);
   useEffect(() => {
@@ -239,6 +240,14 @@ export function AnalyzeView({ dataset }: { dataset: Dataset }) {
                 </span>
               </div>
             ))}
+          </div>
+        )}
+
+        {!run && !running && onReplay && (
+          <div>
+            <h3 style={{ margin: "4px 0 2px", fontSize: 14 }}>Or watch an example</h3>
+            <p className="small muted" style={{ margin: "0 0 6px" }}>Questions answered earlier. Watching them is free.</p>
+            <ReplayList onOpen={onReplay} />
           </div>
         )}
 
